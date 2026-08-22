@@ -270,6 +270,161 @@
   }
   .sources a { color: var(--link); }
 
+  .weather { position: relative; overflow: visible; }
+  .wx-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .now {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .wx-now {
+    width: 52px;
+    height: 52px;
+    display: block;
+    flex-shrink: 0;
+  }
+  .wx-ico {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+
+  .hourly {
+    margin: 0 0 14px;
+    padding: 10px 12px 8px;
+    background: var(--inset);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    overflow: visible;
+  }
+  .hourly-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px 16px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .hourly-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .hourly-cap {
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .hourly-row {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    padding-top: 34px;
+    margin-top: -4px;
+  }
+  .hourly-row::-webkit-scrollbar { display: none; height: 0; }
+
+  .hr {
+    position: relative;
+    flex: 1 0 0;
+    min-width: 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 2px 6px;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .hr:hover,
+  .hr:focus-visible { background: #1a2028; }
+  .hr:focus { outline: none; }
+  .hr:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 1px;
+  }
+  .hr-time {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .hr-track {
+    width: 7px;
+    height: 32px;
+    background: #161b22;
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .hr-bar {
+    width: 100%;
+    background: var(--sky);
+    border-radius: 2px 2px 1px 1px;
+    min-height: 0;
+  }
+  .hr-bar.trace {
+    min-height: 2px;
+    opacity: 0.4;
+  }
+  .hr-bar.bump {
+    min-height: 3px;
+    background: #a7c6d6;
+  }
+  .hr-tip {
+    position: absolute;
+    top: 2px;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    min-width: max-content;
+    padding: 5px 8px 6px;
+    background: #1a1f27;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .hr:hover .hr-tip,
+  .hr:focus-visible .hr-tip {
+    opacity: 1;
+    visibility: visible;
+  }
+  .hr:nth-child(-n+2) .hr-tip { left: 0; transform: none; }
+  .hr:nth-last-child(-n+2) .hr-tip { left: auto; right: 0; transform: none; }
+
   /* Markets */
   .markets {
     display: grid;
@@ -686,6 +841,7 @@
     .chart.modal-chart { height: 62vh; }
     .modal { padding: 12px; }
     .weather-top { gap: 12px 16px; }
+    .wx-now { width: 44px; height: 44px; }
     .advisory { flex-direction: column; gap: 8px; }
     .watch { grid-template-columns: 1fr; }
     .wx-stats { gap: 8px; }
@@ -704,10 +860,63 @@
     <section class="section" aria-labelledby="wx-label">
       <h2 class="section-label" id="wx-label">Austin weather</h2>
       <article class="card weather">
+        <svg class="wx-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <symbol id="i-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4.05" fill="#c9a06a" fill-opacity="0.28"/>
+            <circle cx="12" cy="12" r="4.05" fill="none" stroke="#c9a06a" stroke-width="1.5"/>
+            <g fill="none" stroke="#c9a06a" stroke-width="1.5" stroke-linecap="round">
+              <path d="M12 3.15v1.9M12 18.95v1.9M3.15 12h1.9M18.95 12h1.9"/>
+              <path d="M6.02 6.02l1.35 1.35M16.63 16.63l1.35 1.35M6.02 17.98l1.35-1.35M16.63 7.37l1.35-1.35"/>
+            </g>
+          </symbol>
+          <symbol id="i-partly" viewBox="0 0 24 24">
+            <circle cx="9.15" cy="8.35" r="3.05" fill="#c9a06a" fill-opacity="0.26"/>
+            <circle cx="9.15" cy="8.35" r="3.05" fill="none" stroke="#c9a06a" stroke-width="1.4"/>
+            <g fill="none" stroke="#c9a06a" stroke-width="1.4" stroke-linecap="round">
+              <path d="M9.15 2.7v1.55M3.55 8.35H2M4.85 4.05l1.1 1.1M13.45 4.05l-1.1 1.1"/>
+            </g>
+            <path d="M8 18.2h9.3a3.2 3.2 0 0 0 0-6.4 4 4 0 0 0-7.7-1.2 3.3 3.3 0 0 0-4.8 3 3.15 3.15 0 0 0 3.2 3.6z" fill="#8fb4cc" fill-opacity="0.16" stroke="#8fb4cc" stroke-width="1.4" stroke-linejoin="round"/>
+          </symbol>
+          <symbol id="i-cloud" viewBox="0 0 24 24">
+            <path d="M6.7 17.55h10.5a3.6 3.6 0 0 0 .15-7.2 4.7 4.7 0 0 0-8.95-1.25A3.7 3.7 0 0 0 6.7 17.55z" fill="#8fb4cc" fill-opacity="0.16" stroke="#8fb4cc" stroke-width="1.5" stroke-linejoin="round"/>
+          </symbol>
+          <symbol id="i-rain" viewBox="0 0 24 24">
+            <path d="M6.7 15.2h10.5a3.6 3.6 0 0 0 .15-7.2 4.7 4.7 0 0 0-8.95-1.25A3.7 3.7 0 0 0 6.7 15.2z" fill="#8fb4cc" fill-opacity="0.16" stroke="#8fb4cc" stroke-width="1.5" stroke-linejoin="round"/>
+            <g fill="none" stroke="#8fb4cc" stroke-width="1.5" stroke-linecap="round">
+              <path d="M8.45 17.35l.55 1.7M12 17.35l.55 1.7M15.55 17.35l.55 1.7"/>
+            </g>
+          </symbol>
+          <symbol id="i-storm" viewBox="0 0 24 24">
+            <path d="M6.7 14.7h10.5a3.6 3.6 0 0 0 .15-7.2 4.7 4.7 0 0 0-8.95-1.25A3.7 3.7 0 0 0 6.7 14.7z" fill="#8fb4cc" fill-opacity="0.16" stroke="#8fb4cc" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M12.35 13.45l-2.55 4.35h2.15l-1.05 3.35 3.85-5.15h-2.2z" fill="#c9a06a" fill-opacity="0.32" stroke="#c9a06a" stroke-width="1.15" stroke-linejoin="round"/>
+          </symbol>
+          <symbol id="i-wind" viewBox="0 0 24 24">
+            <g fill="none" stroke="#8fb4cc" stroke-width="1.5" stroke-linecap="round">
+              <path d="M4 9.8h11.4a2.15 2.15 0 1 0-1.35-3.8"/>
+              <path d="M4 13.4h13.1a2.35 2.35 0 1 1-1.15 4.4"/>
+              <path d="M4 17h7.2"/>
+            </g>
+          </symbol>
+          <symbol id="i-hot" viewBox="0 0 24 24">
+            <circle cx="11.1" cy="12" r="4.05" fill="#c9a06a" fill-opacity="0.28"/>
+            <circle cx="11.1" cy="12" r="4.05" fill="none" stroke="#c9a06a" stroke-width="1.5"/>
+            <g fill="none" stroke="#c9a06a" stroke-width="1.5" stroke-linecap="round">
+              <path d="M11.1 3.15v1.9M11.1 18.95v1.9M2.25 12h1.9M18.05 12h1.15"/>
+              <path d="M5.12 6.02l1.35 1.35M15.73 16.63l1.1 1.1M5.12 17.98l1.35-1.35M15.73 7.37l1.1-1.1"/>
+            </g>
+            <g fill="none" stroke="#c9a06a" stroke-width="1.25" stroke-linecap="round" opacity="0.7">
+              <path d="M20.2 8.2c.7.7.7 1.8 0 2.5s-.7 1.8 0 2.5"/>
+              <path d="M22.15 7.1c1 1 1 2.55 0 3.55s-1 2.55 0 3.55"/>
+            </g>
+          </symbol>
+        </svg>
         <div class="weather-top">
-          <div class="temp">92<span>°F</span></div>
+          <div class="now">
+            <svg class="wx-now" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <div class="temp">92<span>°F</span></div>
+          </div>
           <div class="cond">
-            <p class="cond-main">Fair / clear</p>
+            <p class="cond-main">Sunny</p>
             <p class="cond-sub">Heat index 96° · Humidity 44% · Wind W 3 mph</p>
             <p class="cond-obs">Observed 10:51 AM CT · Camp Mabry (KATT)</p>
           </div>
@@ -741,6 +950,123 @@
           <div class="adv-body">
             <strong>Until 7:00 PM CT Sunday, August 23.</strong>
             <span class="adv-meta">NWS Austin/San Antonio · TXZ192</span>
+          </div>
+        </div>
+
+        <div class="hourly">
+          <div class="hourly-head">
+            <span class="hourly-title" id="hourly-label">Hourly rain chance</span>
+            <span class="hourly-cap">No measurable rain expected (QPF 0)</span>
+          </div>
+          <div class="hourly-row" role="list" aria-labelledby="hourly-label">
+          <button type="button" class="hr" aria-label="12p, Sunny, 96°, 0% chance of rain">
+            <span class="hr-time">12p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">96° · 0% · Sunny</span>
+          </button>
+          <button type="button" class="hr" aria-label="1p, Sunny, hot, 100°, 0% chance of rain">
+            <span class="hr-time">1p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">100° · 0% · Sunny, hot</span>
+          </button>
+          <button type="button" class="hr" aria-label="2p, Sunny, hot, 102°, 0% chance of rain">
+            <span class="hr-time">2p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">102° · 0% · Sunny, hot</span>
+          </button>
+          <button type="button" class="hr" aria-label="3p, Sunny, hot, 103°, 0% chance of rain">
+            <span class="hr-time">3p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">103° · 0% · Sunny, hot</span>
+          </button>
+          <button type="button" class="hr" aria-label="4p, Sunny, hot, 105°, 6% chance of rain">
+            <span class="hr-time">4p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar bump" style="height:6%"></span></span>
+            <span class="hr-tip">105° · 6% · Sunny, hot</span>
+          </button>
+          <button type="button" class="hr" aria-label="5p, Sunny, hot, 105°, 6% chance of rain">
+            <span class="hr-time">5p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar bump" style="height:6%"></span></span>
+            <span class="hr-tip">105° · 6% · Sunny, hot</span>
+          </button>
+          <button type="button" class="hr" aria-label="6p, Mostly clear, 102°, 6% chance of rain">
+            <span class="hr-time">6p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar bump" style="height:6%"></span></span>
+            <span class="hr-tip">102° · 6% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="7p, Mostly clear, 99°, 1% chance of rain">
+            <span class="hr-time">7p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">99° · 1% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="8p, Mostly clear, 95°, 1% chance of rain">
+            <span class="hr-time">8p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">95° · 1% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="9p, Mostly clear, 91°, 1% chance of rain">
+            <span class="hr-time">9p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">91° · 1% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="10p, Mostly clear, 88°, 0% chance of rain">
+            <span class="hr-time">10p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">88° · 0% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="11p, Mostly clear, 86°, 0% chance of rain">
+            <span class="hr-time">11p</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">86° · 0% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="12a, Mostly clear, 84°, 0% chance of rain">
+            <span class="hr-time">12a</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar" style="height:0%"></span></span>
+            <span class="hr-tip">84° · 0% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="1a, Mostly clear, 83°, 1% chance of rain">
+            <span class="hr-time">1a</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">83° · 1% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="2a, Mostly clear, 82°, 1% chance of rain">
+            <span class="hr-time">2a</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">82° · 1% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="3a, Mostly clear, 81°, 1% chance of rain">
+            <span class="hr-time">3a</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">81° · 1% · Mostly clear</span>
+          </button>
+          <button type="button" class="hr" aria-label="4a, Partly cloudy, 81°, 1% chance of rain">
+            <span class="hr-time">4a</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">81° · 1% · Partly cloudy</span>
+          </button>
+          <button type="button" class="hr" aria-label="5a, Partly cloudy, 80°, 1% chance of rain">
+            <span class="hr-time">5a</span>
+            <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-partly"/></svg>
+            <span class="hr-track" aria-hidden="true"><span class="hr-bar trace" style="height:1%"></span></span>
+            <span class="hr-tip">80° · 1% · Partly cloudy</span>
+          </button>
           </div>
         </div>
 
