@@ -124,6 +124,15 @@
     text-transform: uppercase;
     color: var(--ink-4);
   }
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 0 10px;
+  }
+  .section-head .section-label { margin: 0; }
+  .advisory[hidden] { display: none !important; }
 
   .card {
     background: var(--card);
@@ -853,12 +862,15 @@
     <header class="mast">
       <div>
         <h1>Good Morning</h1>
-        <p class="sub">Saturday, August 22, 2026 · as of 11:37 AM CT</p>
+        <p class="sub" id="mast-asof">Saturday, August 22, 2026 · as of 11:37 AM CT</p>
       </div>
     </header>
 
     <section class="section" aria-labelledby="wx-label">
-      <h2 class="section-label" id="wx-label">Austin weather</h2>
+      <div class="section-head">
+        <h2 class="section-label" id="wx-label">Austin weather</h2>
+        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 11:37 AM CT">STALE</span>
+      </div>
       <article class="card weather">
         <svg class="wx-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
           <symbol id="i-sun" viewBox="0 0 24 24">
@@ -912,53 +924,53 @@
         </svg>
         <div class="weather-top">
           <div class="now">
-            <svg class="wx-now" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
-            <div class="temp">92<span>°F</span></div>
+            <svg class="wx-now" id="wx-now" aria-hidden="true" focusable="false"><use id="wx-now-use" href="#i-sun"/></svg>
+            <div class="temp" id="wx-temp">92<span>°F</span></div>
           </div>
           <div class="cond">
-            <p class="cond-main">Sunny</p>
-            <p class="cond-sub">Heat index 96° · Humidity 44% · Wind W 3 mph</p>
-            <p class="cond-obs">Observed 10:51 AM CT · Camp Mabry (KATT)</p>
+            <p class="cond-main" id="wx-cond-main">Sunny</p>
+            <p class="cond-sub" id="wx-cond-sub">Heat index 96° · Humidity 44% · Wind W 3 mph</p>
+            <p class="cond-obs" id="wx-cond-obs">Observed 10:51 AM CT · Camp Mabry (KATT)</p>
           </div>
         </div>
 
         <div class="wx-stats">
           <div class="stat">
             <span class="k">High</span>
-            <span class="v">105°</span>
-            <span class="s">Today</span>
+            <span class="v" id="wx-high">105°</span>
+            <span class="s" id="wx-high-s">Today</span>
           </div>
           <div class="stat">
             <span class="k">Low</span>
-            <span class="v">81°</span>
-            <span class="s">Today</span>
+            <span class="v" id="wx-low">81°</span>
+            <span class="s" id="wx-low-s">Today</span>
           </div>
           <div class="stat heat-stat">
             <span class="k">Heat index</span>
-            <span class="v">109–110°</span>
-            <span class="s">2–5 PM CT</span>
+            <span class="v" id="wx-hi">109–110°</span>
+            <span class="s" id="wx-hi-s">2–5 PM CT</span>
           </div>
           <div class="stat">
             <span class="k">Rain</span>
-            <span class="v">~6%</span>
-            <span class="s">mainly 4–6 PM</span>
+            <span class="v" id="wx-rain">~6%</span>
+            <span class="s" id="wx-rain-s">mainly 4–6 PM</span>
           </div>
         </div>
 
-        <div class="advisory">
-          <span class="tag">Heat Advisory</span>
+        <div class="advisory" id="wx-advisory">
+          <span class="tag" id="wx-adv-tag">Heat Advisory</span>
           <div class="adv-body">
-            <strong>Until 7:00 PM CT Sunday, August 23.</strong>
-            <span class="adv-meta">NWS Austin/San Antonio · TXZ192</span>
+            <strong id="wx-adv-until">Until 7:00 PM CT Sunday, August 23.</strong>
+            <span class="adv-meta" id="wx-adv-meta">NWS Austin/San Antonio · TXZ192</span>
           </div>
         </div>
 
         <div class="hourly">
           <div class="hourly-head">
             <span class="hourly-title" id="hourly-label">Hourly rain chance</span>
-            <span class="hourly-cap">No measurable rain expected (QPF 0)</span>
+            <span class="hourly-cap" id="wx-hourly-cap">No measurable rain expected (QPF 0)</span>
           </div>
-          <div class="hourly-row" role="list" aria-labelledby="hourly-label">
+          <div class="hourly-row" id="wx-hourly-row" role="list" aria-labelledby="hourly-label">
           <button type="button" class="hr" aria-label="12p, Sunny, 96°, 0% chance of rain">
             <span class="hr-time">12p</span>
             <svg class="wx-ico" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
@@ -1850,5 +1862,587 @@
   }
 })();
 </script>
+<script>
+(function () {
+  "use strict";
+
+  var TZ = "America/Chicago";
+  var WX_POLL_MS = 10 * 60 * 1000;
+  var OBS_URL = "https://api.weather.gov/stations/KATT/observations/latest";
+  var HOURLY_URL = "https://api.weather.gov/gridpoints/EWX/156,91/forecast/hourly";
+  var DAILY_URL = "https://api.weather.gov/gridpoints/EWX/156,91/forecast";
+  var ALERTS_URL = "https://api.weather.gov/alerts/active?point=30.2672,-97.7431";
+
+  var wxEverOk = false;
+
+  function $(id) { return document.getElementById(id); }
+
+  function finite(n) {
+    return typeof n === "number" && isFinite(n);
+  }
+
+  function nwsNum(obj) {
+    if (obj == null) return null;
+    if (typeof obj === "number") return finite(obj) ? obj : null;
+    if (typeof obj === "object" && obj.value != null && obj.value !== "") {
+      var n = Number(obj.value);
+      return finite(n) ? n : null;
+    }
+    return null;
+  }
+
+  function toF(obj) {
+    var v = nwsNum(obj);
+    if (v == null) return null;
+    var u = String((obj && obj.unitCode) || "").toLowerCase();
+    if (u.indexOf("degf") >= 0 || u.indexOf("fahrenheit") >= 0) return v;
+    return v * 9 / 5 + 32;
+  }
+
+  function toMph(obj) {
+    var v = nwsNum(obj);
+    if (v == null) return null;
+    var u = String((obj && obj.unitCode) || "").toLowerCase();
+    if (u.indexOf("mi_h") >= 0 || u.indexOf("mph") >= 0) return v;
+    if (u.indexOf("m_s-1") >= 0 || u.indexOf("m_s") >= 0 && u.indexOf("km") < 0) return v * 2.23694;
+    return v * 0.621371;
+  }
+
+  function parseMph(s) {
+    var m = String(s || "").match(/(\d+(?:\.\d+)?)/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  function degToCard(deg) {
+    if (!finite(deg)) return "";
+    var dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+    return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+  }
+
+  function heatIndexF(t, rh) {
+    if (!finite(t) || !finite(rh)) return null;
+    if (t < 80) {
+      var simple = 0.5 * (t + 61 + ((t - 68) * 1.2) + (rh * 0.094));
+      if (simple < 80) return Math.round(simple);
+    }
+    var hi = -42.379
+      + 2.04901523 * t
+      + 10.14333127 * rh
+      - 0.22475541 * t * rh
+      - 0.00683783 * t * t
+      - 0.05481717 * rh * rh
+      + 0.00122874 * t * t * rh
+      + 0.00085282 * t * rh * rh
+      - 0.00000199 * t * t * rh * rh;
+    if (rh < 13 && t >= 80 && t <= 112) {
+      hi -= ((13 - rh) / 4) * Math.sqrt((17 - Math.abs(t - 95)) / 17);
+    } else if (rh > 85 && t >= 80 && t <= 87) {
+      hi += ((rh - 85) / 10) * ((87 - t) / 5);
+    }
+    return Math.round(hi);
+  }
+
+  function pickIcon(desc, tempF, windMph) {
+    var s = String(desc || "").toLowerCase();
+    if (/thunder|tstm|\bstorm\b/.test(s)) return "i-storm";
+    if (/rain|shower|drizzle/.test(s)) return "i-rain";
+    if (/wind/.test(s) && !/rain|shower|drizzle/.test(s) && (windMph == null || windMph >= 15)) {
+      return "i-wind";
+    }
+    if (/partly|mostly cloudy|mostly clear|\bfew\b/.test(s)) return "i-partly";
+    if (/cloud|overcast/.test(s)) return "i-cloud";
+    if (/sunny|clear|fair|hot/.test(s)) {
+      if (finite(tempF) && tempF >= 100 && /sunny|clear|fair/.test(s)) return "i-hot";
+      return "i-sun";
+    }
+    if (finite(windMph) && windMph >= 15 && !/rain|shower|drizzle|thunder|storm/.test(s)) {
+      return "i-wind";
+    }
+    return "i-sun";
+  }
+
+  function setUse(svgOrUse, iconId) {
+    if (!svgOrUse || !iconId) return;
+    var use = svgOrUse.tagName && svgOrUse.tagName.toLowerCase() === "use"
+      ? svgOrUse
+      : svgOrUse.querySelector("use");
+    if (!use) return;
+    use.setAttribute("href", "#" + iconId);
+    try { use.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#" + iconId); } catch (err) {}
+  }
+
+  function setText(id, value) {
+    var el = $(id);
+    if (el) el.textContent = value;
+  }
+
+  var timeFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  var hourOnlyFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "numeric",
+    hour12: true
+  });
+
+  var hourPartsFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "numeric",
+    hour12: true
+  });
+
+  var dayTimeFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  var mastFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+
+  function fmtTimeCT(ms) {
+    if (!finite(ms)) return "—";
+    return timeFmt.format(new Date(ms)) + " CT";
+  }
+
+  function hrLabel(ms) {
+    var parts = hourPartsFmt.formatToParts(new Date(ms));
+    var hour = "0";
+    var ap = "a";
+    var i;
+    for (i = 0; i < parts.length; i++) {
+      if (parts[i].type === "hour") hour = parts[i].value;
+      if (parts[i].type === "dayPeriod") ap = parts[i].value.charAt(0).toLowerCase();
+    }
+    return hour + ap;
+  }
+
+  function clockHour(ms) {
+    var parts = hourPartsFmt.formatToParts(new Date(ms));
+    var hour = "";
+    var ap = "";
+    var i;
+    for (i = 0; i < parts.length; i++) {
+      if (parts[i].type === "hour") hour = parts[i].value;
+      if (parts[i].type === "dayPeriod") ap = parts[i].value.toUpperCase();
+    }
+    return { hour: hour, ap: ap };
+  }
+
+  function formatHourSpan(msList) {
+    if (!msList || !msList.length) return "";
+    var a = clockHour(msList[0]);
+    var b = clockHour(msList[msList.length - 1]);
+    if (msList.length === 1) return a.hour + " " + a.ap + " CT";
+    if (a.ap === b.ap) return a.hour + "–" + b.hour + " " + a.ap + " CT";
+    return a.hour + " " + a.ap + "–" + b.hour + " " + b.ap + " CT";
+  }
+
+  function nwsFetch(url) {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () {
+      try { ctrl.abort(); } catch (err) {}
+    }, 10000);
+    return fetch(url, {
+      signal: ctrl.signal,
+      cache: "no-store",
+      headers: { "Accept": "application/geo+json" }
+    }).then(function (res) {
+      if (!res.ok) throw new Error("http");
+      return res.json();
+    }).then(function (data) {
+      clearTimeout(timer);
+      return data;
+    }, function (err) {
+      clearTimeout(timer);
+      throw err;
+    });
+  }
+
+  function setWxLive(state, title) {
+    var el = $("wx-live");
+    if (!el) return;
+    el.setAttribute("data-state", state);
+    el.textContent = state.toUpperCase();
+    if (title) el.setAttribute("title", title);
+  }
+
+  function updateMast() {
+    var el = $("mast-asof");
+    if (!el) return;
+    el.textContent = mastFmt.format(new Date()) + " · as of " + fmtTimeCT(Date.now());
+  }
+
+  function applyObs(data) {
+    if (!data || !data.properties) return false;
+    var p = data.properties;
+    var tempF = toF(p.temperature);
+    if (tempF == null) return false;
+    tempF = Math.round(tempF);
+    var desc = p.textDescription || "";
+    var rh = nwsNum(p.relativeHumidity);
+    if (rh != null) rh = Math.round(rh);
+    var hiF = toF(p.heatIndex);
+    if (hiF != null) hiF = Math.round(hiF);
+    else if (rh != null) hiF = heatIndexF(tempF, rh);
+    var windMph = toMph(p.windSpeed);
+    var windDir = degToCard(nwsNum(p.windDirection));
+    if (windMph != null) windMph = Math.round(windMph);
+
+    var tempEl = $("wx-temp");
+    if (tempEl) {
+      tempEl.textContent = "";
+      tempEl.appendChild(document.createTextNode(String(tempF)));
+      var span = document.createElement("span");
+      span.textContent = "°F";
+      tempEl.appendChild(span);
+    }
+
+    setUse($("wx-now-use") || $("wx-now"), pickIcon(desc, tempF, windMph));
+    setText("wx-cond-main", desc || "—");
+
+    var bits = [];
+    if (hiF != null) bits.push("Heat index " + hiF + "°");
+    if (rh != null) bits.push("Humidity " + rh + "%");
+    if (windMph == null && !windDir) {
+      /* omit wind when NWS left it missing */
+    } else if (windMph == null || windMph === 0) {
+      bits.push("Wind calm");
+    } else {
+      bits.push("Wind " + (windDir ? windDir + " " : "") + windMph + " mph");
+    }
+    if (bits.length) setText("wx-cond-sub", bits.join(" · "));
+
+    var ts = p.timestamp ? Date.parse(p.timestamp) : NaN;
+    var when = finite(ts) ? timeFmt.format(new Date(ts)) + " CT" : "—";
+    var name = p.stationName || "";
+    var station = /camp mabry/i.test(name) ? "Camp Mabry (KATT)" : (p.stationId || "KATT");
+    if (!/camp mabry/i.test(name) && name && p.stationId) {
+      station = name + " (" + p.stationId + ")";
+    } else if (!/katt/i.test(station)) {
+      station = station + " (KATT)";
+    }
+    setText("wx-cond-obs", "Observed " + when + " · " + station);
+    return true;
+  }
+
+  function applyDaily(data) {
+    if (!data || !data.properties || !Array.isArray(data.properties.periods)) return false;
+    var periods = data.properties.periods;
+    var high = null;
+    var low = null;
+    var i;
+    for (i = 0; i < periods.length && i < 6; i++) {
+      var per = periods[i] || {};
+      var name = String(per.name || "");
+      var t = per.temperature;
+      if (!finite(Number(t))) continue;
+      t = Math.round(Number(t));
+      if (high == null && (/^today$/i.test(name) || /this afternoon|this morning/i.test(name) || (per.isDaytime && i === 0))) {
+        high = { t: t, name: name || "Today" };
+      }
+      if (low == null && (/^tonight$/i.test(name) || (!per.isDaytime && /night/i.test(name)))) {
+        low = { t: t, name: name || "Tonight" };
+      }
+    }
+    if (high == null || low == null) {
+      for (i = 0; i < periods.length && i < 4; i++) {
+        var q = periods[i] || {};
+        if (!finite(Number(q.temperature))) continue;
+        if (high == null && q.isDaytime) high = { t: Math.round(Number(q.temperature)), name: q.name || "Today" };
+        if (low == null && !q.isDaytime) low = { t: Math.round(Number(q.temperature)), name: q.name || "Tonight" };
+      }
+    }
+    if (high) {
+      setText("wx-high", high.t + "°");
+      setText("wx-high-s", high.name || "Today");
+    }
+    if (low) {
+      setText("wx-low", low.t + "°");
+      setText("wx-low-s", low.name || "Today");
+    }
+    return !!(high || low);
+  }
+
+  function upcomingHourly(periods) {
+    var now = Date.now();
+    var out = [];
+    var i;
+    for (i = 0; i < periods.length && out.length < 18; i++) {
+      var per = periods[i];
+      if (!per) continue;
+      var end = per.endTime ? Date.parse(per.endTime) : NaN;
+      var start = per.startTime ? Date.parse(per.startTime) : NaN;
+      if (finite(end) && end <= now) continue;
+      if (!finite(end) && finite(start) && start + 3600000 <= now) continue;
+      out.push(per);
+    }
+    return out;
+  }
+
+  function qpfValue(per) {
+    if (!per) return null;
+    var q = per.quantitativePrecipitation;
+    if (q == null) return null;
+    if (typeof q === "number") return finite(q) ? q : null;
+    if (typeof q === "object" && q.value != null && q.value !== "") {
+      var n = Number(q.value);
+      return finite(n) ? n : null;
+    }
+    return null;
+  }
+
+  function applyHourly(data) {
+    if (!data || !data.properties || !Array.isArray(data.properties.periods)) return false;
+    var hours = upcomingHourly(data.properties.periods);
+    if (!hours.length) return false;
+
+    var row = $("wx-hourly-row");
+    if (row) {
+      row.textContent = "";
+      hours.forEach(function (per) {
+        var start = Date.parse(per.startTime);
+        var temp = finite(Number(per.temperature)) ? Math.round(Number(per.temperature)) : null;
+        var pop = nwsNum(per.probabilityOfPrecipitation);
+        if (pop == null) pop = 0;
+        pop = Math.max(0, Math.min(100, Math.round(pop)));
+        var short = per.shortForecast || "";
+        var windMph = parseMph(per.windSpeed);
+        var icon = pickIcon(short, temp, windMph);
+        var label = finite(start) ? hrLabel(start) : "—";
+        var tip = (temp != null ? temp + "°" : "—") + " · " + pop + "% · " + (short || "—");
+        var aria = label + ", " + (short || "forecast") + (temp != null ? ", " + temp + "°" : "") + ", " + pop + "% chance of rain";
+
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "hr";
+        btn.setAttribute("aria-label", aria);
+
+        var tEl = document.createElement("span");
+        tEl.className = "hr-time";
+        tEl.textContent = label;
+        btn.appendChild(tEl);
+
+        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("class", "wx-ico");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("focusable", "false");
+        var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", "#" + icon);
+        svg.appendChild(use);
+        btn.appendChild(svg);
+
+        var track = document.createElement("span");
+        track.className = "hr-track";
+        track.setAttribute("aria-hidden", "true");
+        var bar = document.createElement("span");
+        var cls = "hr-bar";
+        if (pop > 0 && pop < 5) cls += " trace";
+        else if (pop >= 5 && pop < 15) cls += " bump";
+        bar.className = cls;
+        bar.style.height = pop + "%";
+        track.appendChild(bar);
+        btn.appendChild(track);
+
+        var tipEl = document.createElement("span");
+        tipEl.className = "hr-tip";
+        tipEl.textContent = tip;
+        btn.appendChild(tipEl);
+
+        row.appendChild(btn);
+      });
+    }
+
+    var cap = $("wx-hourly-cap");
+    if (cap) {
+      var seen = 0;
+      var zeros = 0;
+      var anyPos = false;
+      hours.forEach(function (per) {
+        var q = qpfValue(per);
+        if (q == null) return;
+        seen += 1;
+        if (q === 0) zeros += 1;
+        if (q > 0) anyPos = true;
+      });
+      if (seen === 0) {
+        cap.textContent = "PoP from NWS hourly";
+      } else if (!anyPos && zeros === seen) {
+        cap.textContent = "No measurable rain expected (QPF 0)";
+      } else if (anyPos) {
+        cap.textContent = "QPF from NWS hourly";
+      } else {
+        cap.textContent = "PoP from NWS hourly";
+      }
+    }
+
+    var hiVals = [];
+    hours.forEach(function (per) {
+      var t = finite(Number(per.temperature)) ? Number(per.temperature) : null;
+      var rh = nwsNum(per.relativeHumidity);
+      var hi = heatIndexF(t, rh);
+      var start = Date.parse(per.startTime);
+      if (hi != null && finite(start)) hiVals.push({ hi: hi, t: start });
+    });
+    if (hiVals.length) {
+      var maxHi = hiVals[0].hi;
+      hiVals.forEach(function (x) { if (x.hi > maxHi) maxHi = x.hi; });
+      var peak = hiVals.filter(function (x) { return x.hi >= maxHi - 1; });
+      var lo = peak[0].hi;
+      var hi = peak[0].hi;
+      var times = [];
+      peak.forEach(function (x) {
+        if (x.hi < lo) lo = x.hi;
+        if (x.hi > hi) hi = x.hi;
+        times.push(x.t);
+      });
+      setText("wx-hi", lo === hi ? lo + "°" : lo + "–" + hi + "°");
+      setText("wx-hi-s", formatHourSpan(times) || "Today");
+    }
+
+    var pops = hours.map(function (per) {
+      var pop = nwsNum(per.probabilityOfPrecipitation);
+      if (pop == null) pop = 0;
+      return { pop: Math.round(pop), t: Date.parse(per.startTime) };
+    }).filter(function (x) { return finite(x.t); });
+    if (pops.length) {
+      var maxPop = 0;
+      pops.forEach(function (x) { if (x.pop > maxPop) maxPop = x.pop; });
+      if (maxPop <= 0) {
+        setText("wx-rain", "0%");
+        setText("wx-rain-s", "none expected");
+      } else {
+        var peakP = pops.filter(function (x) { return x.pop >= Math.max(1, maxPop - 1) && x.pop > 0; });
+        if (!peakP.length) peakP = pops.filter(function (x) { return x.pop === maxPop; });
+        setText("wx-rain", "~" + maxPop + "%");
+        setText("wx-rain-s", peakP.length ? "mainly " + formatHourSpan(peakP.map(function (x) { return x.t; })).replace(" CT", "") : "today");
+      }
+    }
+    return true;
+  }
+
+  function isHeatAlert(feature) {
+    if (!feature || !feature.properties) return false;
+    var p = feature.properties;
+    var ev = String(p.event || "").toLowerCase();
+    if (ev.indexOf("heat advisory") >= 0 || ev.indexOf("extreme heat") >= 0) return true;
+    var codes = [];
+    var ec = p.eventCode || {};
+    var add = function (arr) {
+      if (!arr) return;
+      if (typeof arr === "string") codes.push(arr);
+      else if (arr.length) {
+        var i;
+        for (i = 0; i < arr.length; i++) codes.push(arr[i]);
+      }
+    };
+    add(ec.NationalWeatherService);
+    add(ec.SAME);
+    var i;
+    for (i = 0; i < codes.length; i++) {
+      var c = String(codes[i] || "").toUpperCase().replace(/\./g, "");
+      if (c === "HTY" || c === "EHW" || c === "EH") return true;
+    }
+    var vtec = ((p.parameters || {}).VTEC) || [];
+    for (i = 0; i < vtec.length; i++) {
+      var v = String(vtec[i] || "").toUpperCase();
+      if (/\.HT\.Y\.|\.EH\.[WY]\./.test(v)) return true;
+    }
+    return false;
+  }
+
+  function applyAlerts(data) {
+    var box = $("wx-advisory");
+    if (!box) return false;
+    if (!data || !Array.isArray(data.features)) return false;
+    var hit = null;
+    var i;
+    for (i = 0; i < data.features.length; i++) {
+      if (isHeatAlert(data.features[i])) {
+        hit = data.features[i].properties;
+        break;
+      }
+    }
+    if (!hit) {
+      box.hidden = true;
+      return true;
+    }
+    box.hidden = false;
+    setText("wx-adv-tag", hit.event || "Heat Advisory");
+    var untilMs = hit.ends ? Date.parse(hit.ends) : (hit.expires ? Date.parse(hit.expires) : NaN);
+    if (finite(untilMs)) {
+      var untilDay = new Intl.DateTimeFormat("en-US", {
+        timeZone: TZ,
+        weekday: "long",
+        month: "long",
+        day: "numeric"
+      }).format(new Date(untilMs));
+      setText("wx-adv-until", "Until " + timeFmt.format(new Date(untilMs)) + " CT " + untilDay + ".");
+    }
+    var sender = String(hit.senderName || "NWS").replace(/\s+TX\s*$/, "");
+    var ugc = ((hit.geocode || {}).UGC) || [];
+    var zone = "";
+    for (i = 0; i < ugc.length; i++) {
+      if (String(ugc[i]).toUpperCase() === "TXZ192") { zone = "TXZ192"; break; }
+    }
+    if (!zone && ugc.length) zone = String(ugc[0]);
+    setText("wx-adv-meta", zone ? sender + " · " + zone : sender);
+    return true;
+  }
+
+  function refreshWx() {
+    Promise.all([
+      nwsFetch(OBS_URL).then(function (d) { return d; }, function () { return null; }),
+      nwsFetch(HOURLY_URL).then(function (d) { return d; }, function () { return null; }),
+      nwsFetch(DAILY_URL).then(function (d) { return d; }, function () { return null; }),
+      nwsFetch(ALERTS_URL).then(function (d) { return d; }, function () { return null; })
+    ]).then(function (parts) {
+      var obs = parts[0];
+      var hourly = parts[1];
+      var daily = parts[2];
+      var alerts = parts[3];
+      var ok = false;
+      try { if (obs) ok = applyObs(obs) || ok; } catch (err) {}
+      try { if (daily) ok = applyDaily(daily) || ok; } catch (err) {}
+      try { if (hourly) ok = applyHourly(hourly) || ok; } catch (err) {}
+      try { if (alerts) ok = applyAlerts(alerts) || ok; } catch (err) {}
+      if (ok) {
+        wxEverOk = true;
+        setWxLive("live", "NWS · " + fmtTimeCT(Date.now()));
+        try { updateMast(); } catch (err) {}
+      } else {
+        setWxLive("stale", wxEverOk ? "Last live NWS update failed" : "Using baked snapshot · NWS offline");
+      }
+    }).catch(function () {
+      setWxLive(wxEverOk ? "stale" : "offline", "NWS fetch failed");
+    });
+  }
+
+  function boot() {
+    try { refreshWx(); } catch (err) {}
+    setInterval(function () {
+      try { refreshWx(); } catch (err) {}
+    }, WX_POLL_MS);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
 </body>
 </html>
