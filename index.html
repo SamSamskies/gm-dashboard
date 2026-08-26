@@ -140,6 +140,233 @@
     border-radius: var(--radius);
   }
 
+  .ask-ai {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    flex-shrink: 0;
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    background: var(--inset);
+    color: var(--sky);
+    cursor: pointer;
+  }
+  .ask-ai:hover {
+    color: var(--ink);
+    border-color: var(--sky);
+  }
+  .ask-ai:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 2px;
+  }
+  .ask-ai[aria-pressed="true"] {
+    border-color: var(--sky);
+    color: var(--ink);
+    background: #1a2830;
+  }
+  .ask-ai svg { width: 14px; height: 14px; display: block; }
+  .item-top .ask-ai { margin-left: auto; }
+  .brief-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .card.has-ask-abs { position: relative; }
+  .card.has-ask-abs > .ask-ai {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+  }
+  .watch-item.has-ask-abs { padding-right: 40px; }
+
+  .ask-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 8, 11, 0.55);
+    z-index: 90;
+  }
+  body.ask-open .ask-backdrop { display: block; }
+  .ask-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(26rem, 100vw);
+    height: 100%;
+    z-index: 91;
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border-left: 1px solid var(--line);
+    box-shadow: -16px 0 48px rgba(0,0,0,0.35);
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+  }
+  body.ask-open .ask-panel { transform: translateX(0); }
+  .ask-panel[hidden] { display: none !important; }
+  .ask-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .ask-head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .ask-sub {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.35;
+  }
+  .ask-close {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-3);
+    background: var(--inset);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .ask-close:hover { color: var(--ink); }
+  .ask-log {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  .ask-empty {
+    margin: auto 0;
+    text-align: center;
+    color: var(--ink-4);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .ask-msg {
+    max-width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ask-msg.user {
+    align-self: flex-end;
+    background: #1a2830;
+    border: 1px solid #2e4a58;
+  }
+  .ask-msg.user.failed {
+    background: #2a1818;
+    border-color: #5a3038;
+    color: var(--down);
+  }
+  .ask-msg.assistant {
+    align-self: stretch;
+    background: var(--inset);
+    border: 1px solid var(--line-soft);
+  }
+  .ask-msg.meta {
+    align-self: stretch;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    color: var(--ink-4);
+  }
+  .ask-msg.error {
+    align-self: stretch;
+    background: #2a1818;
+    color: var(--down);
+    border: 1px solid #5a3038;
+    font-size: 13px;
+  }
+  .ask-msg .ask-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 4px;
+  }
+  .ask-msg.pending .ask-body { display: none; }
+  .ask-typing {
+    display: none;
+    color: var(--ink-4);
+    font-size: 12px;
+  }
+  .ask-msg.pending .ask-typing { display: inline; }
+  .ask-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .ask-form textarea {
+    width: 100%;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    font: inherit;
+    color: inherit;
+    line-height: 1.4;
+  }
+  .ask-form textarea:focus {
+    outline: 2px solid var(--sky);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+  .ask-form textarea:disabled { opacity: 0.55; }
+  .ask-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .ask-actions button {
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--inset);
+    color: var(--ink-2);
+  }
+  .ask-actions button:hover:not(:disabled) { color: var(--ink); }
+  .ask-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .ask-actions button.ask-send {
+    background: #1a2830;
+    border-color: #2e4a58;
+    color: var(--sky);
+  }
+  @media (min-width: 900px) {
+    body.ask-open .ask-backdrop { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ask-panel { transition: none; }
+  }
+
   /* Weather */
   .weather { padding: var(--pad); }
   .weather-top {
@@ -2601,6 +2828,407 @@
     boot();
   }
 })();
+</script>
+
+
+  <div id="ask-backdrop" class="ask-backdrop" hidden></div>
+  <aside id="ask-panel" class="ask-panel" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ask-title">
+    <header class="ask-head">
+      <div>
+        <h2 id="ask-title">Ask</h2>
+        <p id="ask-sub" class="ask-sub"></p>
+      </div>
+      <button type="button" class="ask-close" id="ask-close" aria-label="Close">Close</button>
+    </header>
+    <div id="ask-log" class="ask-log"></div>
+    <form id="ask-form" class="ask-form">
+      <textarea id="ask-input" rows="1" placeholder="Ask about this card…"></textarea>
+      <div class="ask-actions">
+        <button type="button" id="ask-clear">Clear</button>
+        <button type="button" id="ask-stop" hidden>Stop</button>
+        <button type="submit" id="ask-send" class="ask-send">Ask</button>
+      </div>
+    </form>
+  </aside>
+
+<script>
+(function () {
+  "use strict";
+
+  var SPARKLE =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+    '<path fill="currentColor" d="M12 3l1.15 4.05L17.2 8.2l-4.05 1.15L12 13.4l-1.15-4.05L6.8 8.2l4.05-1.15L12 3zm6.4 8.2l.7 2.45 2.45.7-2.45.7-.7 2.45-.7-2.45-2.45-.7 2.45-.7.7-2.45zM5.6 13.4l.55 1.9 1.9.55-1.9.55-.55 1.9-.55-1.9-1.9-.55 1.9-.55.55-1.9z"/>' +
+    "</svg>";
+
+  var SYSTEM =
+    "You are answering questions about one card from a Good Morning dashboard " +
+    "(Austin, America/Chicago). The card is already a summary — do not summarize it unless asked. " +
+    "Answer the user's questions using the card context below. " +
+    "Use web search when you need current facts, more detail, or sources beyond the card. " +
+    "Be concise. Prefer plain text.";
+
+  var panel = document.getElementById("ask-panel");
+  var backdrop = document.getElementById("ask-backdrop");
+  var logEl = document.getElementById("ask-log");
+  var form = document.getElementById("ask-form");
+  var input = document.getElementById("ask-input");
+  var sendBtn = document.getElementById("ask-send");
+  var clearBtn = document.getElementById("ask-clear");
+  var stopBtn = document.getElementById("ask-stop");
+  var closeBtn = document.getElementById("ask-close");
+  var titleEl = document.getElementById("ask-title");
+  var subEl = document.getElementById("ask-sub");
+
+  var activeController = null;
+  var history = [];
+  var activeCard = null;
+  var activeBtn = null;
+  var cardTitle = "";
+
+  function inferenceRequest() {
+    var inf = window.inference;
+    if (!inf) return null;
+    if (inf.experimental && typeof inf.experimental.request === "function") {
+      return inf.experimental.request.bind(inf.experimental);
+    }
+    return null;
+  }
+
+  function cardHeading(card) {
+    if (card.classList.contains("weather")) return "Austin weather";
+    var el = card.querySelector(".mkt-name, .brief-top h3");
+    if (el && el.textContent.trim()) return el.textContent.trim();
+    var when = card.querySelector(".when");
+    if (when && when.textContent.trim()) return "Watch · " + when.textContent.trim();
+    var strong = card.querySelector("p strong");
+    if (strong && strong.textContent.trim()) return strong.textContent.trim();
+    var section = card.closest(".section");
+    var label = section && section.querySelector(".section-label");
+    return (label && label.textContent.trim()) || "Dashboard card";
+  }
+
+  function cardContext(card) {
+    var clone = card.cloneNode(true);
+    var drop = clone.querySelectorAll(".ask-ai, .wx-sprite, .chart, svg, button");
+    var i;
+    for (i = 0; i < drop.length; i++) {
+      if (drop[i].parentNode) drop[i].parentNode.removeChild(drop[i]);
+    }
+    var text = (clone.innerText || "").replace(/\n{3,}/g, "\n\n").trim();
+    var links = card.querySelectorAll("a[href]");
+    if (links.length) {
+      text += "\n\nSources:";
+      for (i = 0; i < links.length; i++) {
+        var label = (links[i].textContent || "").trim();
+        text += "\n- " + label + (label ? " " : "") + links[i].href;
+      }
+    }
+    return text;
+  }
+
+  function seedHistory(card) {
+    cardTitle = cardHeading(card);
+    history = [
+      {
+        role: "system",
+        content: SYSTEM + "\n\nCard: " + cardTitle + "\n\n" + cardContext(card)
+      }
+    ];
+  }
+
+  function emptyHint() {
+    var el = document.createElement("div");
+    el.className = "ask-empty";
+    el.id = "ask-empty";
+    el.textContent = "Ask a question about this card.";
+    return el;
+  }
+
+  function resetLog() {
+    logEl.replaceChildren();
+    logEl.appendChild(emptyHint());
+  }
+
+  function hideEmpty() {
+    var el = document.getElementById("ask-empty");
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  function setBusy(busy) {
+    sendBtn.disabled = busy;
+    input.disabled = busy;
+    clearBtn.disabled = busy;
+    stopBtn.hidden = !busy;
+    if (!busy) activeController = null;
+  }
+
+  function setPanelOpen(open) {
+    document.body.classList.toggle("ask-open", open);
+    panel.hidden = !open;
+    panel.setAttribute("aria-hidden", open ? "false" : "true");
+    backdrop.hidden = !open;
+    if (activeBtn) activeBtn.setAttribute("aria-pressed", open ? "true" : "false");
+    if (open) {
+      try { input.focus(); } catch (err) {}
+    }
+  }
+
+  function closePanel() {
+    if (activeController) return;
+    setPanelOpen(false);
+    if (activeBtn) activeBtn.setAttribute("aria-pressed", "false");
+  }
+
+  function openPanel(card, btn) {
+    if (activeCard !== card) {
+      if (activeController) {
+        try { activeController.abort(); } catch (err) {}
+      }
+      activeCard = card;
+      if (activeBtn && activeBtn !== btn) activeBtn.setAttribute("aria-pressed", "false");
+      activeBtn = btn;
+      seedHistory(card);
+      titleEl.textContent = "Ask";
+      subEl.textContent = cardTitle;
+      resetLog();
+      setBusy(false);
+    } else {
+      activeBtn = btn;
+    }
+    setPanelOpen(true);
+  }
+
+  function appendMessage(role, text, pending) {
+    hideEmpty();
+    var el = document.createElement("div");
+    el.className = "ask-msg " + role;
+    if (pending) el.classList.add("pending");
+    if (role === "user" || role === "assistant") {
+      var label = document.createElement("span");
+      label.className = "ask-label";
+      label.textContent = role === "assistant" ? "assistant" : "you";
+      el.appendChild(label);
+    }
+    if (pending) {
+      var typing = document.createElement("span");
+      typing.className = "ask-typing";
+      typing.textContent = "Waiting";
+      el.appendChild(typing);
+    }
+    var body = document.createElement("span");
+    body.className = "ask-body";
+    body.textContent = text;
+    el.appendChild(body);
+    logEl.appendChild(el);
+    logEl.scrollTop = logEl.scrollHeight;
+    return body;
+  }
+
+  function clearPending(body) {
+    var bubble = body.parentElement;
+    if (!bubble || !bubble.classList.contains("pending")) return;
+    bubble.classList.remove("pending");
+    var typing = bubble.querySelector(".ask-typing");
+    if (typing) typing.parentNode.removeChild(typing);
+  }
+
+  function setPendingLabel(body, label) {
+    var bubble = body.parentElement;
+    var typing = bubble && bubble.querySelector(".ask-typing");
+    if (!typing) return;
+    typing.textContent = label;
+  }
+
+  function appendMeta(text) {
+    var el = document.createElement("div");
+    el.className = "ask-msg meta";
+    el.textContent = text;
+    logEl.appendChild(el);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function appendError(err) {
+    var code = err && err.code ? err.code : "unknown";
+    var message = err && err.message ? err.message : String(err);
+    var el = document.createElement("div");
+    el.className = "ask-msg error";
+    el.textContent = code + ": " + message;
+    logEl.appendChild(el);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  async function runInference(userText) {
+    var request = inferenceRequest();
+    if (!request) {
+      appendError({
+        code: "unavailable",
+        message: "window.inference.experimental is missing. Install Inference Bridge and open this page over https or localhost (npx serve)."
+      });
+      return;
+    }
+
+    var userBody = appendMessage("user", userText, false);
+    var assistantBody = appendMessage("assistant", "", true);
+    activeController = new AbortController();
+    setBusy(true);
+
+    try {
+      var iter = request({
+        method: "chat",
+        messages: history,
+        tools: [{ type: "web_search" }],
+        signal: activeController.signal
+      });
+      for await (var chunk of iter) {
+        if (chunk.type === "accepted") {
+          setPendingLabel(assistantBody, "Generating");
+        } else if (chunk.type === "delta") {
+          clearPending(assistantBody);
+          assistantBody.textContent += chunk.content || "";
+          logEl.scrollTop = logEl.scrollHeight;
+        } else if (chunk.type === "done") {
+          clearPending(assistantBody);
+          var content = chunk.message && chunk.message.content != null
+            ? chunk.message.content
+            : assistantBody.textContent;
+          assistantBody.textContent = content || "";
+          history.push({ role: "assistant", content: assistantBody.textContent });
+          var parts = [];
+          if (chunk.model) parts.push("model " + chunk.model);
+          if (chunk.usage) {
+            if (chunk.usage.inputTokens != null) parts.push("in " + chunk.usage.inputTokens);
+            if (chunk.usage.outputTokens != null) parts.push("out " + chunk.usage.outputTokens);
+          }
+          if (parts.length) appendMeta(parts.join(" · "));
+        }
+      }
+    } catch (err) {
+      if (!assistantBody.textContent) {
+        var bubble = assistantBody.parentElement;
+        if (bubble && bubble.parentNode) bubble.parentNode.removeChild(bubble);
+        var userBubble = userBody.parentElement;
+        if (userBubble) {
+          userBubble.classList.add("failed");
+          var lab = userBubble.querySelector(".ask-label");
+          if (lab) lab.textContent = "you · failed";
+        }
+        if (history.length && history[history.length - 1].role === "user") history.pop();
+      } else {
+        clearPending(assistantBody);
+        history.push({ role: "assistant", content: assistantBody.textContent });
+      }
+      appendError(err);
+    } finally {
+      setBusy(false);
+      if (document.body.classList.contains("ask-open")) {
+        try { input.focus(); } catch (err2) {}
+      }
+    }
+  }
+
+  function sendQuestion(content) {
+    input.value = "";
+    input.style.height = "auto";
+    history.push({ role: "user", content: content });
+    runInference(content);
+  }
+
+  function clearChat() {
+    if (activeController || !activeCard) return;
+    seedHistory(activeCard);
+    resetLog();
+    setBusy(false);
+    try { input.focus(); } catch (err) {}
+  }
+
+  function makeButton(card) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ask-ai";
+    btn.setAttribute("aria-label", "Ask about this card");
+    btn.setAttribute("title", "Ask about this card");
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = SPARKLE;
+    btn.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      openPanel(card, btn);
+    });
+    return btn;
+  }
+
+  function placeButton(card, btn) {
+    var flags = card.querySelector(".mkt-flags");
+    if (flags) {
+      flags.appendChild(btn);
+      return;
+    }
+    var mktHead = card.querySelector(".mkt-head");
+    if (mktHead) {
+      var wrap = document.createElement("div");
+      wrap.className = "mkt-flags";
+      var closed = mktHead.querySelector(".mkt-closed");
+      if (closed) wrap.appendChild(closed);
+      wrap.appendChild(btn);
+      mktHead.appendChild(wrap);
+      return;
+    }
+    var briefTop = card.querySelector(".brief-top");
+    if (briefTop) {
+      var right = document.createElement("div");
+      right.className = "brief-right";
+      var badge = briefTop.querySelector(".badge");
+      if (badge) right.appendChild(badge);
+      right.appendChild(btn);
+      briefTop.appendChild(right);
+      return;
+    }
+    var itemTop = card.querySelector(".item-top");
+    if (itemTop) {
+      itemTop.appendChild(btn);
+      return;
+    }
+    card.classList.add("has-ask-abs");
+    card.insertBefore(btn, card.firstChild);
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var content = input.value.trim();
+    if (!content || activeController) return;
+    sendQuestion(content);
+  });
+  clearBtn.addEventListener("click", clearChat);
+  stopBtn.addEventListener("click", function () {
+    if (activeController) activeController.abort();
+  });
+  closeBtn.addEventListener("click", closePanel);
+  backdrop.addEventListener("click", closePanel);
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && document.body.classList.contains("ask-open")) {
+      if (activeController) return;
+      ev.preventDefault();
+      closePanel();
+    }
+  });
+  input.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      form.requestSubmit();
+    }
+  });
+  input.addEventListener("input", function () {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 120) + "px";
+  });
+
+  var cards = document.querySelectorAll("article.card");
+  var c;
+  for (c = 0; c < cards.length; c++) {
+    placeButton(cards[c], makeButton(cards[c]));
+  }
+})();
+
 </script>
 
 </body>
