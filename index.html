@@ -1367,6 +1367,7 @@
   // https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=300
   var POLL_MS = 15000;
   var STALE_MS = 45000;
+  var DAY_MS = 24 * 60 * 60 * 1000;
   var SVG_NS = "http://www.w3.org/2000/svg";
 
   function $(id) { return document.getElementById(id); }
@@ -1380,6 +1381,15 @@
     } catch (err) {
       return [];
     }
+  }
+
+  function clipWindow(series, ms) {
+    if (!series || !series.length || !ms) return series || [];
+    var t1 = series[series.length - 1].t;
+    var cut = t1 - ms;
+    var i = 0;
+    while (i < series.length && series[i].t < cut) i++;
+    return i ? series.slice(i) : series;
   }
 
   function fmtUsd(n) {
@@ -1505,7 +1515,9 @@
 
   ChartView.prototype.series = function () {
     try {
-      return this.spec.getSeries() || [];
+      var series = this.spec.getSeries() || [];
+      if (this.spec.windowMs) return clipWindow(series, this.spec.windowMs);
+      return series;
     } catch (err) {
       return [];
     }
@@ -1542,8 +1554,8 @@
     if (pad === 0) pad = Math.max(1, Math.abs(minC) * 0.002);
     var yMin = minC - pad;
     var yMax = maxC + pad;
-    var t0 = series[0].t;
     var t1 = series[series.length - 1].t;
+    var t0 = this.spec.windowMs ? t1 - this.spec.windowMs : series[0].t;
     if (t1 === t0) t1 = t0 + 1;
     this.scale = { yMin: yMin, yMax: yMax, t0: t0, t1: t1 };
 
@@ -1755,8 +1767,9 @@
   }
 
   function updateBtcHeader() {
-    var last = lastClose(btc);
-    var first = btc.length ? btc[0].c : NaN;
+    var win = clipWindow(btc, DAY_MS);
+    var last = lastClose(win);
+    var first = win.length ? win[0].c : NaN;
     var pct = (last - first) / first * 100;
     var priceEl = $("btc-price");
     var chgEl = $("btc-chg");
@@ -1767,7 +1780,7 @@
       chgEl.className = "chg " + chgClass(pct);
     }
     if (metaEl) {
-      var r = rangeOf(btc);
+      var r = rangeOf(win);
       metaEl.textContent = "";
       var s = document.createElement("span");
       s.textContent = "24h";
@@ -1793,6 +1806,8 @@
       var o = last ? last.c : price;
       btc.push({ t: minute, o: o, h: price, l: price, c: price });
     }
+    var cut = minute - DAY_MS;
+    while (btc.length && btc[0].t < cut) btc.shift();
     updateBtcHeader();
   }
 
@@ -1873,6 +1888,7 @@
       color: isBtc ? "#c98888" : "#8fb4cc",
       prefix: isBtc ? "$" : "",
       aria: isBtc ? "Bitcoin 24 hour chart" : "Dow Jones Friday session chart",
+      windowMs: isBtc ? DAY_MS : 0,
       getSeries: function () { return isBtc ? btc : dow; },
       onExpand: null
     });
@@ -1904,6 +1920,7 @@
         color: "#7dba94",
         prefix: "$",
         aria: "Bitcoin 24 hour chart, click to expand",
+        windowMs: DAY_MS,
         getSeries: function () { return btc; },
         onExpand: function () { openModal("btc"); }
       }));
