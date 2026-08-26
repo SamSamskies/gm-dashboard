@@ -3160,8 +3160,11 @@
     }
   }
 
-  function closePanel() {
-    if (activeController) return;
+  function closePanel(force) {
+    if (activeController) {
+      if (!force) return;
+      try { activeController.abort(); } catch (err) {}
+    }
     setPanelOpen(false);
     if (activeBtn) activeBtn.setAttribute("aria-pressed", "false");
   }
@@ -3392,13 +3395,18 @@
   stopBtn.addEventListener("click", function () {
     if (activeController) activeController.abort();
   });
-  closeBtn.addEventListener("click", closePanel);
-  backdrop.addEventListener("click", closePanel);
+  closeBtn.addEventListener("click", function () { closePanel(true); });
+  backdrop.addEventListener("click", function () { closePanel(true); });
+  document.addEventListener("mousedown", function (ev) {
+    if (!document.body.classList.contains("ask-open")) return;
+    if (panel.contains(ev.target)) return;
+    if (ev.target.closest && ev.target.closest(".ask-ai")) return;
+    closePanel(true);
+  });
   document.addEventListener("keydown", function (ev) {
     if (ev.key === "Escape" && document.body.classList.contains("ask-open")) {
-      if (activeController) return;
       ev.preventDefault();
-      closePanel();
+      closePanel(true);
     }
   });
   input.addEventListener("keydown", function (ev) {
