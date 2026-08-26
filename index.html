@@ -262,9 +262,54 @@
     border-radius: 10px;
     font-size: 13.5px;
     line-height: 1.5;
-    white-space: pre-wrap;
     word-break: break-word;
   }
+  .ask-msg.user .ask-body { white-space: pre-wrap; }
+  .ask-body { display: block; }
+  .ask-body.md p { margin: 0 0 0.65em; }
+  .ask-body.md p:last-child { margin-bottom: 0; }
+  .ask-body.md ul,
+  .ask-body.md ol { margin: 0.35em 0 0.65em; padding-left: 1.25em; }
+  .ask-body.md li { margin: 0.2em 0; }
+  .ask-body.md li ul,
+  .ask-body.md li ol { margin: 0.15em 0 0.25em; }
+  .ask-body.md strong { color: var(--ink); font-weight: 650; }
+  .ask-body.md em { font-style: italic; }
+  .ask-body.md code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+    background: var(--bg);
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+  }
+  .ask-body.md pre {
+    margin: 0.5em 0;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .ask-body.md pre code {
+    border: none;
+    padding: 0;
+    background: transparent;
+  }
+  .ask-body.md h1,
+  .ask-body.md h2,
+  .ask-body.md h3 {
+    margin: 0.35em 0 0.4em;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .ask-body.md h1 { font-size: 1.12em; }
+  .ask-body.md h2 { font-size: 1.05em; }
+  .ask-body.md h3 { font-size: 1em; }
+  .ask-body.md a { color: var(--link); }
   .ask-msg.user {
     align-self: flex-end;
     background: #1a2830;
@@ -2867,6 +2912,148 @@
     "Use web search when you need current facts, more detail, or sources beyond the card. " +
     "Be concise. Prefer plain text.";
 
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function safeHref(url) {
+    try {
+      var u = new URL(url, "https://example.invalid");
+      if (u.protocol === "http:" || u.protocol === "https:") return u.href;
+    } catch (err) {}
+    return "";
+  }
+
+  function inlineMd(escaped) {
+    var holes = [];
+    function stash(html) {
+      holes.push(html);
+      return "\u0000" + (holes.length - 1) + "\u0000";
+    }
+    escaped = escaped.replace(/`([^`]+)`/g, function (_, code) {
+      return stash("<code>" + code + "</code>");
+    });
+    escaped = escaped.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, label, url) {
+      var href = safeHref(url.replace(/&amp;/g, "&"));
+      if (!href) return label;
+      return stash(
+        '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">' +
+          label +
+        "</a>"
+      );
+    });
+    escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    escaped = escaped.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+    escaped = escaped.replace(/(^|[^\*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    escaped = escaped.replace(/\u0000(\d+)\u0000/g, function (_, n) {
+      return holes[Number(n)] || "";
+    });
+    return escaped;
+  }
+
+  function consumeList(lines, start) {
+    var items = [];
+    var i = start;
+    while (i < lines.length) {
+      var m = lines[i].match(/^([ \t]*)([-*+]|\d+\.)\s+(.*)$/);
+      if (!m) break;
+      items.push({
+        indent: m[1].replace(/\t/g, "    ").length,
+        ordered: /^\d/.test(m[2]),
+        text: m[3]
+      });
+      i++;
+    }
+    if (!items.length) return { html: "", next: start };
+    function build(idx, minIndent) {
+      if (idx >= items.length || items[idx].indent < minIndent) {
+        return { html: "", idx: idx };
+      }
+      var ordered = items[idx].ordered;
+      var html = ordered ? "<ol>" : "<ul>";
+      while (idx < items.length && items[idx].indent === minIndent && items[idx].ordered === ordered) {
+        html += "<li>" + inlineMd(escapeHtml(items[idx].text));
+        idx++;
+        if (idx < items.length && items[idx].indent > minIndent) {
+          var nested = build(idx, items[idx].indent);
+          html += nested.html;
+          idx = nested.idx;
+        }
+        html += "</li>";
+      }
+      html += ordered ? "</ol>" : "</ul>";
+      return { html: html, idx: idx };
+    }
+    var rendered = build(0, items[0].indent);
+    return { html: rendered.html, next: i };
+  }
+
+  function mdToHtml(raw) {
+    var src = String(raw || "").replace(/\r\n/g, "\n");
+    var lines = src.split("\n");
+    var out = [];
+    var i = 0;
+    while (i < lines.length) {
+      var line = lines[i];
+      if (/^```/.test(line)) {
+        var buf = [];
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i])) {
+          buf.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length) i++;
+        out.push("<pre><code>" + escapeHtml(buf.join("\n")) + "</code></pre>");
+        continue;
+      }
+      if (/^###\s+/.test(line)) {
+        out.push("<h3>" + inlineMd(escapeHtml(line.replace(/^###\s+/, ""))) + "</h3>");
+        i++;
+        continue;
+      }
+      if (/^##\s+/.test(line)) {
+        out.push("<h2>" + inlineMd(escapeHtml(line.replace(/^##\s+/, ""))) + "</h2>");
+        i++;
+        continue;
+      }
+      if (/^#\s+/.test(line)) {
+        out.push("<h1>" + inlineMd(escapeHtml(line.replace(/^#\s+/, ""))) + "</h1>");
+        i++;
+        continue;
+      }
+      if (/^([ \t]*)([-*+]|\d+\.)\s+/.test(line)) {
+        var list = consumeList(lines, i);
+        out.push(list.html);
+        i = list.next;
+        continue;
+      }
+      if (!line.trim()) {
+        i++;
+        continue;
+      }
+      var para = [];
+      while (i < lines.length) {
+        var ln = lines[i];
+        if (!ln.trim()) break;
+        if (/^```/.test(ln) || /^#{1,3}\s+/.test(ln) || /^([ \t]*)([-*+]|\d+\.)\s+/.test(ln)) break;
+        para.push(ln);
+        i++;
+      }
+      out.push("<p>" + inlineMd(escapeHtml(para.join("\n"))).replace(/\n/g, "<br>") + "</p>");
+    }
+    return out.join("");
+  }
+
+  function renderMarkdown(el, raw) {
+    el.classList.add("md");
+    el.innerHTML = mdToHtml(raw);
+  }
+
+
   var panel = document.getElementById("ask-panel");
   var backdrop = document.getElementById("ask-backdrop");
   var logEl = document.getElementById("ask-log");
@@ -3015,7 +3202,7 @@
       typing.textContent = "Waiting";
       el.appendChild(typing);
     }
-    var body = document.createElement("span");
+    var body = document.createElement("div");
     body.className = "ask-body";
     body.textContent = text;
     el.appendChild(body);
@@ -3091,8 +3278,9 @@
           var content = chunk.message && chunk.message.content != null
             ? chunk.message.content
             : assistantBody.textContent;
-          assistantBody.textContent = content || "";
-          history.push({ role: "assistant", content: assistantBody.textContent });
+          var raw = content || "";
+          history.push({ role: "assistant", content: raw });
+          renderMarkdown(assistantBody, raw);
           var parts = [];
           if (chunk.model) parts.push("model " + chunk.model);
           if (chunk.usage) {
@@ -3114,8 +3302,10 @@
         }
         if (history.length && history[history.length - 1].role === "user") history.pop();
       } else {
+        var partial = assistantBody.textContent;
         clearPending(assistantBody);
-        history.push({ role: "assistant", content: assistantBody.textContent });
+        history.push({ role: "assistant", content: partial });
+        renderMarkdown(assistantBody, partial);
       }
       appendError(err);
     } finally {
