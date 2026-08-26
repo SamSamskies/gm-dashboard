@@ -1363,8 +1363,7 @@
 
   var TZ = "America/Chicago";
   var BTC_TICKER = "https://api.exchange.coinbase.com/products/BTC-USD/ticker";
-  // Later refresh of the series:
-  // https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=300
+  var BTC_CANDLES = "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=300";
   var POLL_MS = 15000;
   var STALE_MS = 45000;
   var DAY_MS = 24 * 60 * 60 * 1000;
@@ -1739,6 +1738,7 @@
   var dow = readSeries("dow-series");
   var liveState = "offline";
   var lastOk = 0;
+  var lastLive = null;
   var views = [];
   var modalView = null;
   var opener = null;
@@ -1811,6 +1811,59 @@
     updateBtcHeader();
   }
 
+  function parseCandles(raw) {
+    if (!Array.isArray(raw)) return [];
+    var out = [];
+    var i;
+    for (i = 0; i < raw.length; i++) {
+      var row = raw[i];
+      if (!row || row.length < 5) continue;
+      var t = Number(row[0]) * 1000;
+      var l = Number(row[1]);
+      var h = Number(row[2]);
+      var o = Number(row[3]);
+      var c = Number(row[4]);
+      if (!isFiniteNumber(t) || !isFiniteNumber(c)) continue;
+      out.push({
+        t: t,
+        o: isFiniteNumber(o) ? o : c,
+        h: isFiniteNumber(h) ? h : c,
+        l: isFiniteNumber(l) ? l : c,
+        c: c
+      });
+    }
+    out.sort(function (a, b) { return a.t - b.t; });
+    return out;
+  }
+
+  function loadBtcHistory() {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () {
+      try { ctrl.abort(); } catch (err) {}
+    }, 8000);
+    var end = Date.now();
+    var start = end - DAY_MS;
+    var url = BTC_CANDLES
+      + "&start=" + encodeURIComponent(new Date(start).toISOString())
+      + "&end=" + encodeURIComponent(new Date(end).toISOString());
+    fetch(url, { signal: ctrl.signal, cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("http");
+        return res.json();
+      })
+      .then(function (raw) {
+        var series = clipWindow(parseCandles(raw), DAY_MS);
+        if (!series.length) return;
+        btc = series;
+        if (lastLive) appendBtc(lastLive.price, lastLive.t);
+        else updateBtcHeader();
+      })
+      .catch(function () { /* keep baked series */ })
+      .then(function () {
+        clearTimeout(timer);
+      });
+  }
+
   function pollBtc() {
     var ctrl = new AbortController();
     var timer = setTimeout(function () {
@@ -1826,6 +1879,7 @@
         var t = data && data.time ? Date.parse(data.time) : Date.now();
         if (!isFiniteNumber(price)) throw new Error("price");
         lastOk = Date.now();
+        lastLive = { price: price, t: t };
         appendBtc(price, t);
         setLive("live");
       })
@@ -1946,6 +2000,7 @@
     }
     if (modalClose) modalClose.addEventListener("click", closeModal);
 
+    loadBtcHistory();
     pollBtc();
     setInterval(function () {
       try {
