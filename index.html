@@ -1480,13 +1480,16 @@
         <article class="card mkt">
           <div class="mkt-head">
             <h3 class="mkt-name">Dow Jones</h3>
-            <span class="mkt-closed">Wed Aug 26 session · cash opens 8:30 AM CT</span>
+            <div class="mkt-flags">
+              <span class="mkt-closed" id="dow-session">Wed Aug 26 session</span>
+              <span id="dow-live" class="live-pill" data-state="offline">OFFLINE</span>
+            </div>
           </div>
           <div class="mkt-row">
-            <div class="price">53,463.88</div>
-            <div class="chg down">−113.52 / −0.21%</div>
+            <div class="price" id="dow-price">53,463.88</div>
+            <div class="chg down" id="dow-chg">−113.52 / −0.21%</div>
           </div>
-          <p class="mkt-meta">O 53,547.68 · H 53,639.75 · L 53,379.40 · <span>prev</span> 53,577.40</p>
+          <p class="mkt-meta" id="dow-meta">O 53,547.68 · H 53,639.75 · L 53,379.40 · <span>prev</span> 53,577.40</p>
           <div class="chart" id="dow-chart">
             <button type="button" class="chart-stage" aria-label="Dow Jones Wednesday session chart, click to expand"></button>
             <div class="chart-tip" hidden></div>
@@ -1494,7 +1497,8 @@
           </div>
           <p class="mkt-note">Soft on sticky PCE (−0.21% vs Tuesday). Nvidia beat after the close; first cash tape today 8:30 AM CT.</p>
           <div class="sources">
-            <a href="https://finance.yahoo.com/quote/%5EDJI/history/" target="_blank" rel="noopener noreferrer">Yahoo Finance · ^DJI</a>
+            <a href="https://finance.yahoo.com/quote/%5EDJI/" target="_blank" rel="noopener noreferrer">Yahoo Finance · ^DJI</a>
+            <a href="https://www.cnbc.com/quotes/.DJI" target="_blank" rel="noopener noreferrer">CNBC</a>
           </div>
         </article>
       </div>
@@ -1787,6 +1791,8 @@
   var TZ = "America/Chicago";
   var BTC_TICKER = "https://api.exchange.coinbase.com/products/BTC-USD/ticker";
   var BTC_CANDLES = "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=300";
+  var DOW_QUOTE = "https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=.DJI&requestMethod=itv&noform=1&partnerId=2&output=json";
+  var DOW_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/%5EDJI?interval=5m&range=1d&includePrePost=false";
   var POLL_MS = 15000;
   var STALE_MS = 45000;
   var DAY_MS = 24 * 60 * 60 * 1000;
@@ -1864,6 +1870,20 @@
     weekday: "short",
     hour: "numeric",
     minute: "2-digit"
+  });
+
+  var dayFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "short",
+    month: "short",
+    day: "numeric"
+  });
+
+  var dayKeyFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
   });
 
   function fmtTime(ms, withDay) {
@@ -2162,6 +2182,11 @@
   var liveState = "offline";
   var lastOk = 0;
   var lastLive = null;
+  var dowLiveState = "offline";
+  var dowLastOk = 0;
+  var lastDowLive = null;
+  var dowPrevClose = NaN;
+  var dowSessionLabel = "Session";
   var views = [];
   var modalView = null;
   var opener = null;
@@ -2314,6 +2339,171 @@
       });
   }
 
+
+  function dayKey(ms) {
+    return dayKeyFmt.format(new Date(ms));
+  }
+
+  function parseCnbcNum(s) {
+    if (typeof s === "number") return s;
+    if (s == null) return NaN;
+    var n = parseFloat(String(s).replace(/,/g, "").replace(/[+]/g, "").replace(/−/g, "-").replace(/%/g, ""));
+    return isFinite(n) ? n : NaN;
+  }
+
+  function setDowLive(state) {
+    dowLiveState = state;
+    var el = $("dow-live");
+    if (!el) return;
+    el.setAttribute("data-state", state);
+    el.textContent = state.toUpperCase();
+  }
+
+  function updateDowHeader() {
+    var last = lastDowLive && isFiniteNumber(lastDowLive.price) ? lastDowLive.price : lastClose(dow);
+    var prev = isFiniteNumber(dowPrevClose) ? dowPrevClose : NaN;
+    var chg = last - prev;
+    var pct = prev ? (chg / prev) * 100 : NaN;
+    var priceEl = $("dow-price");
+    var chgEl = $("dow-chg");
+    var metaEl = $("dow-meta");
+    var sessEl = $("dow-session");
+    if (priceEl) priceEl.textContent = fmtNum(last);
+    if (chgEl) {
+      var abs = isFiniteNumber(chg) ? Math.abs(chg).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) : "—";
+      var signed = !isFiniteNumber(chg) ? "—" : (chg > 0.005 ? "+" + abs : chg < -0.005 ? "−" + abs : abs);
+      chgEl.textContent = signed + " / " + fmtChgPct(pct);
+      chgEl.className = "chg " + chgClass(pct);
+    }
+    if (metaEl) {
+      var r = rangeOf(dow);
+      metaEl.textContent = "";
+      metaEl.appendChild(document.createTextNode("H " + fmtNum(r.hi) + " · L " + fmtNum(r.lo) + " · "));
+      var s = document.createElement("span");
+      s.textContent = "prev";
+      metaEl.appendChild(s);
+      metaEl.appendChild(document.createTextNode(" " + fmtNum(prev)));
+    }
+    if (sessEl) sessEl.textContent = dowSessionLabel;
+    views.forEach(function (v) {
+      if (v.spec.kind === "dow") {
+        if (v.stage) v.stage.setAttribute("aria-label", "Dow Jones " + dowSessionLabel + " chart, click to expand");
+        v.draw();
+      }
+    });
+    if (modalView && modalView.spec.kind === "dow") modalView.draw();
+  }
+
+  function appendDow(price, timeMs) {
+    if (!isFiniteNumber(price)) return;
+    if (!isFiniteNumber(timeMs)) timeMs = Date.now();
+    var minute = Math.floor(timeMs / 60000) * 60000;
+    if (dow.length && dayKey(dow[dow.length - 1].t) !== dayKey(minute)) {
+      dow = [];
+    }
+    var last = dow[dow.length - 1];
+    if (last && Math.floor(last.t / 60000) * 60000 === minute) {
+      last.c = price;
+      last.h = Math.max(last.h, price);
+      last.l = Math.min(last.l, price);
+    } else {
+      var o = last ? last.c : price;
+      dow.push({ t: minute, o: o, h: price, l: price, c: price });
+    }
+    updateDowHeader();
+  }
+
+  function parseYahooDow(raw) {
+    var res = raw && raw.chart && raw.chart.result && raw.chart.result[0];
+    if (!res) return { series: [], prev: NaN };
+    var ts = res.timestamp || [];
+    var q = res.indicators && res.indicators.quote && res.indicators.quote[0];
+    if (!q) return { series: [], prev: NaN };
+    var closes = q.close || [];
+    var series = [];
+    var i;
+    for (i = 0; i < ts.length; i++) {
+      var c = Number(closes[i]);
+      if (!isFiniteNumber(c)) continue;
+      var t = Number(ts[i]) * 1000;
+      var o = Number(q.open && q.open[i]);
+      var h = Number(q.high && q.high[i]);
+      var l = Number(q.low && q.low[i]);
+      series.push({
+        t: t,
+        o: isFiniteNumber(o) ? o : c,
+        h: isFiniteNumber(h) ? h : c,
+        l: isFiniteNumber(l) ? l : c,
+        c: c
+      });
+    }
+    var meta = res.meta || {};
+    var prev = Number(meta.previousClose);
+    if (!isFiniteNumber(prev)) prev = Number(meta.chartPreviousClose);
+    return { series: series, prev: prev };
+  }
+
+  function loadDowHistory() {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () {
+      try { ctrl.abort(); } catch (err) {}
+    }, 8000);
+    fetch(DOW_CHART, { signal: ctrl.signal, cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("http");
+        return res.json();
+      })
+      .then(function (raw) {
+        var parsed = parseYahooDow(raw);
+        if (!parsed.series.length) return;
+        dow = parsed.series;
+        if (isFiniteNumber(parsed.prev)) dowPrevClose = parsed.prev;
+        if (lastDowLive) appendDow(lastDowLive.price, lastDowLive.t);
+        else updateDowHeader();
+      })
+      .catch(function () { /* keep baked series */ })
+      .then(function () {
+        clearTimeout(timer);
+      });
+  }
+
+  function pollDow() {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () {
+      try { ctrl.abort(); } catch (err) {}
+    }, 8000);
+    fetch(DOW_QUOTE, { signal: ctrl.signal, cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("http");
+        return res.json();
+      })
+      .then(function (data) {
+        var q = data && data.FormattedQuoteResult && data.FormattedQuoteResult.FormattedQuote;
+        q = q && q[0];
+        if (!q) throw new Error("quote");
+        var price = parseCnbcNum(q.last);
+        var t = q.last_time ? Date.parse(q.last_time) : Date.now();
+        if (!isFiniteNumber(price)) throw new Error("price");
+        var prev = parseCnbcNum(q.previous_day_closing);
+        if (isFiniteNumber(prev)) dowPrevClose = prev;
+        var open = q.curmktstatus === "REG_MKT";
+        dowSessionLabel = (open ? "Live · " : "Closed · ") + dayFmt.format(new Date(isFiniteNumber(t) ? t : Date.now()));
+        dowLastOk = Date.now();
+        lastDowLive = { price: price, t: t };
+        appendDow(price, t);
+        setDowLive("live");
+      })
+      .catch(function () {
+        setDowLive(dowLastOk ? "stale" : "offline");
+      })
+      .then(function () {
+        clearTimeout(timer);
+      });
+  }
+
   var modal = $("chart-modal");
   var modalChart = $("modal-chart");
   var modalTitle = $("modal-title");
@@ -2353,7 +2543,7 @@
     if (modalTitle) {
       modalTitle.textContent = isBtc
         ? "Bitcoin · 24-hour"
-        : "Dow Jones · Wednesday session · closed";
+        : "Dow Jones · " + dowSessionLabel;
     }
     modal.hidden = false;
     document.body.classList.add("modal-open");
@@ -2364,7 +2554,7 @@
       kind: kind,
       color: isBtc ? "#c98888" : "#8fb4cc",
       prefix: isBtc ? "$" : "",
-      aria: isBtc ? "Bitcoin 24 hour chart" : "Dow Jones Wednesday session chart",
+      aria: isBtc ? "Bitcoin 24 hour chart" : ("Dow Jones " + dowSessionLabel + " chart"),
       windowMs: isBtc ? DAY_MS : 0,
       getSeries: function () { return isBtc ? btc : dow; },
       onExpand: null
@@ -2386,7 +2576,9 @@
 
   function wire() {
     updateBtcHeader();
+    updateDowHeader();
     setLive("offline");
+    setDowLive("offline");
 
     var btcHost = $("btc-chart");
     var dowHost = $("dow-chart");
@@ -2409,7 +2601,7 @@
         kind: "dow",
         color: "#8fb4cc",
         prefix: "",
-        aria: "Dow Jones Wednesday session chart, click to expand",
+        aria: "Dow Jones session chart, click to expand",
         getSeries: function () { return dow; },
         onExpand: function () { openModal("dow"); }
       }));
@@ -2424,12 +2616,18 @@
     if (modalClose) modalClose.addEventListener("click", closeModal);
 
     loadBtcHistory();
+    loadDowHistory();
     pollBtc();
+    pollDow();
     setInterval(function () {
       try {
         pollBtc();
+        pollDow();
         if (liveState === "live" && lastOk && Date.now() - lastOk > STALE_MS) {
           setLive("stale");
+        }
+        if (dowLiveState === "live" && dowLastOk && Date.now() - dowLastOk > STALE_MS) {
+          setDowLive("stale");
         }
       } catch (err) {}
     }, POLL_MS);
