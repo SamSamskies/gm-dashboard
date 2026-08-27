@@ -1103,6 +1103,92 @@
     letter-spacing: 0.01em;
   }
 
+
+  .preds {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .pred {
+    padding: 16px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .pred-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .pred h3 {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .pred-src {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    flex-shrink: 0;
+  }
+  .pred-rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .pred-rows li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 4px;
+    align-items: baseline;
+  }
+  .pred-lab {
+    font-size: 13px;
+    color: var(--ink-2);
+    min-width: 0;
+  }
+  .pred-pct {
+    font-size: 13.5px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .pred-bar {
+    grid-column: 1 / -1;
+    display: block;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--inset);
+    border: 1px solid var(--line-soft);
+    overflow: hidden;
+  }
+  .pred-bar > i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--sky);
+    border-radius: 99px;
+  }
+  .pred-bar.up > i { background: var(--up); }
+  .pred-bar.down > i { background: var(--down); }
+  .pred-foot {
+    margin: 12px 0 0;
+    font-size: 11.5px;
+    color: var(--ink-4);
+  }
+
   @media (max-width: 840px) {
     .wrap { padding: 24px 16px 32px; }
     header.mast { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -1111,6 +1197,7 @@
     .wx-stats { grid-template-columns: 1fr 1fr; }
     .markets { grid-template-columns: 1fr; }
     .briefs { grid-template-columns: 1fr; }
+    .preds { grid-template-columns: 1fr; }
     .watch { grid-template-columns: 1fr 1fr; }
   }
 
@@ -1409,6 +1496,69 @@
           <div class="sources">
             <a href="https://finance.yahoo.com/quote/%5EDJI/history/" target="_blank" rel="noopener noreferrer">Yahoo Finance · ^DJI</a>
           </div>
+        </article>
+      </div>
+    </section>
+
+
+    <section class="section" aria-labelledby="pm-label">
+      <div class="section-head">
+        <h2 class="section-label" id="pm-label">Prediction markets</h2>
+        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:42 AM CT">STALE</span>
+      </div>
+      <div class="preds" id="pm-grid">
+        <article class="card pred" data-pm="fed">
+          <div class="pred-top">
+            <h3>Fed · September</h3>
+            <a class="pred-src" href="https://polymarket.com/event/fed-decision-in-september-762" target="_blank" rel="noopener noreferrer">Polymarket</a>
+          </div>
+          <ul class="pred-rows">
+            <li><span class="pred-lab">Hold</span><span class="pred-pct">67.5%</span><span class="pred-bar"><i style="width:67.5%"></i></span></li>
+            <li><span class="pred-lab">Hike 25 bps</span><span class="pred-pct">29.5%</span><span class="pred-bar"><i style="width:29.5%"></i></span></li>
+            <li><span class="pred-lab">Cut 25 bps</span><span class="pred-pct">1.2%</span><span class="pred-bar"><i style="width:1.2%"></i></span></li>
+            <li><span class="pred-lab">Hike 50+ / cut 50+</span><span class="pred-pct">&lt;1%</span><span class="pred-bar"><i style="width:0.4%"></i></span></li>
+          </ul>
+          <p class="pred-foot">Implied odds · Sep 15–16 FOMC</p>
+        </article>
+
+        <article class="card pred" data-pm="btc">
+          <div class="pred-top">
+            <h3>Bitcoin</h3>
+            <a class="pred-src" href="https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026" target="_blank" rel="noopener noreferrer">Polymarket</a>
+          </div>
+          <ul class="pred-rows">
+            <li><span class="pred-lab">Hit $82.5k in August</span><span class="pred-pct">35%</span><span class="pred-bar"><i style="width:35.3%"></i></span></li>
+            <li><span class="pred-lab">Hit $85k in August</span><span class="pred-pct">16%</span><span class="pred-bar"><i style="width:16.1%"></i></span></li>
+            <li><span class="pred-lab">Above $80k today</span><span class="pred-pct">15%</span><span class="pred-bar"><i style="width:15.5%"></i></span></li>
+            <li><span class="pred-lab">Above $78k today</span><span class="pred-pct">94%</span><span class="pred-bar up"><i style="width:93.6%"></i></span></li>
+          </ul>
+          <p class="pred-foot">Aug high + Thursday 12:00 UTC close</p>
+        </article>
+
+        <article class="card pred" data-pm="nvda">
+          <div class="pred-top">
+            <h3>Nvidia · August</h3>
+            <a class="pred-src" href="https://polymarket.com/event/what-price-will-nvda-hit-in-august-2026" target="_blank" rel="noopener noreferrer">Polymarket</a>
+          </div>
+          <ul class="pred-rows">
+            <li><span class="pred-lab">Hit $232</span><span class="pred-pct">46%</span><span class="pred-bar"><i style="width:46%"></i></span></li>
+            <li><span class="pred-lab">Hit $240</span><span class="pred-pct">14%</span><span class="pred-bar"><i style="width:13.5%"></i></span></li>
+            <li><span class="pred-lab">This week: $232</span><span class="pred-pct">39%</span><span class="pred-bar"><i style="width:39%"></i></span></li>
+            <li><span class="pred-lab">This week: $236</span><span class="pred-pct">18%</span><span class="pred-bar"><i style="width:18%"></i></span></li>
+          </ul>
+          <p class="pred-foot">After the Q2 beat · cash still opening</p>
+        </article>
+
+        <article class="card pred" data-pm="clarity">
+          <div class="pred-top">
+            <h3>CLARITY Act</h3>
+            <a class="pred-src" href="https://polymarket.com/event/clarity-act-signed-into-law-in-2026" target="_blank" rel="noopener noreferrer">Polymarket</a>
+          </div>
+          <ul class="pred-rows">
+            <li><span class="pred-lab">Signed into law in 2026</span><span class="pred-pct">14%</span><span class="pred-bar"><i style="width:14%"></i></span></li>
+            <li><span class="pred-lab">No</span><span class="pred-pct">86%</span><span class="pred-bar down"><i style="width:86%"></i></span></li>
+          </ul>
+          <p class="pred-foot">H.R.3633 · cloture cited Sep 15</p>
         </article>
       </div>
     </section>
@@ -3430,5 +3580,204 @@
 
 </script>
 
+<script>
+(function () {
+  "use strict";
+
+  var GAMMA = "https://gamma-api.polymarket.com";
+  var POLL_MS = 5 * 60 * 1000;
+  var TZ = "America/Chicago";
+
+  var timeFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  function yesPrice(market) {
+    var outcomes = market.outcomes;
+    var prices = market.outcomePrices;
+    if (typeof outcomes === "string") {
+      try { outcomes = JSON.parse(outcomes); } catch (err) { outcomes = []; }
+    }
+    if (typeof prices === "string") {
+      try { prices = JSON.parse(prices); } catch (err) { prices = []; }
+    }
+    if (!outcomes || !prices) return NaN;
+    var i = outcomes.indexOf("Yes");
+    if (i < 0) i = 0;
+    var n = parseFloat(prices[i]);
+    return isFinite(n) ? n : NaN;
+  }
+
+  function fmtProb(p) {
+    if (!isFinite(p)) return "—";
+    var n = p * 100;
+    if (n < 0.5) return "<1%";
+    if (n >= 99.5) return ">99%";
+    var r = Math.round(n * 10) / 10;
+    return (r % 1 === 0 ? String(r.toFixed(0)) : String(r.toFixed(1))) + "%";
+  }
+
+  function barWidth(p) {
+    if (!isFinite(p)) return "0%";
+    return Math.max(0.4, Math.min(100, p * 100)).toFixed(1) + "%";
+  }
+
+  function setLive(state, title) {
+    var el = document.getElementById("pm-live");
+    if (!el) return;
+    el.setAttribute("data-state", state);
+    el.textContent = state.toUpperCase();
+    if (title) el.setAttribute("title", title);
+  }
+
+  function fillCard(card, rows) {
+    var ul = card.querySelector(".pred-rows");
+    if (!ul) return;
+    ul.textContent = "";
+    rows.forEach(function (row) {
+      var li = document.createElement("li");
+      var lab = document.createElement("span");
+      lab.className = "pred-lab";
+      lab.textContent = row.label;
+      var pct = document.createElement("span");
+      pct.className = "pred-pct";
+      pct.textContent = fmtProb(row.p);
+      var bar = document.createElement("span");
+      bar.className = "pred-bar" + (row.tone ? " " + row.tone : "");
+      var i = document.createElement("i");
+      i.style.width = barWidth(row.p);
+      bar.appendChild(i);
+      li.appendChild(lab);
+      li.appendChild(pct);
+      li.appendChild(bar);
+      ul.appendChild(li);
+    });
+  }
+
+  function q(market) {
+    return String(market.question || "") + " " + String(market.groupItemTitle || "");
+  }
+
+  function pick(markets, test) {
+    var i;
+    for (i = 0; i < markets.length; i++) {
+      if (test(q(markets[i]).toLowerCase(), markets[i])) return markets[i];
+    }
+    return null;
+  }
+
+  function parseEvent(raw) {
+    if (Array.isArray(raw)) return raw[0] || null;
+    return raw;
+  }
+
+  function renderFed(ev) {
+    var card = document.querySelector('.pred[data-pm="fed"]');
+    if (!card || !ev) return;
+    var m = ev.markets || [];
+    var hold = pick(m, function (s) { return s.indexOf("no change") >= 0; });
+    var h25 = pick(m, function (s) { return s.indexOf("increase") >= 0 && s.indexOf("25") >= 0 && s.indexOf("50") < 0; });
+    var c25 = pick(m, function (s) { return s.indexOf("decrease") >= 0 && s.indexOf("25") >= 0 && s.indexOf("50") < 0; });
+    var h50 = pick(m, function (s) { return s.indexOf("increase") >= 0 && s.indexOf("50") >= 0; });
+    var c50 = pick(m, function (s) { return s.indexOf("decrease") >= 0 && s.indexOf("50") >= 0; });
+    var hi = (h50 ? yesPrice(h50) : 0) + (c50 ? yesPrice(c50) : 0);
+    fillCard(card, [
+      { label: "Hold", p: hold ? yesPrice(hold) : NaN },
+      { label: "Hike 25 bps", p: h25 ? yesPrice(h25) : NaN },
+      { label: "Cut 25 bps", p: c25 ? yesPrice(c25) : NaN },
+      { label: "Hike 50+ / cut 50+", p: hi }
+    ]);
+  }
+
+  function renderBtc(aug, today) {
+    var card = document.querySelector('.pred[data-pm="btc"]');
+    if (!card) return;
+    var am = (aug && aug.markets) || [];
+    var tm = (today && today.markets) || [];
+    var a825 = pick(am, function (s) { return s.indexOf("82,500") >= 0 || s.indexOf("82500") >= 0; });
+    var a85 = pick(am, function (s) { return s.indexOf("85,000") >= 0 || s.indexOf("reach $85,000") >= 0; });
+    var t80 = pick(tm, function (s) { return s.indexOf("80,000") >= 0; });
+    var t78 = pick(tm, function (s) { return s.indexOf("78,000") >= 0; });
+    fillCard(card, [
+      { label: "Hit $82.5k in August", p: a825 ? yesPrice(a825) : NaN },
+      { label: "Hit $85k in August", p: a85 ? yesPrice(a85) : NaN },
+      { label: "Above $80k today", p: t80 ? yesPrice(t80) : NaN },
+      { label: "Above $78k today", p: t78 ? yesPrice(t78) : NaN, tone: "up" }
+    ]);
+  }
+
+  function renderNvda(aug, week) {
+    var card = document.querySelector('.pred[data-pm="nvda"]');
+    if (!card) return;
+    var am = (aug && aug.markets) || [];
+    var wm = (week && week.markets) || [];
+    function hit(markets, price) {
+      return pick(markets, function (s) {
+        return s.indexOf("↑") >= 0 && s.indexOf("$" + price) >= 0 ||
+          (s.indexOf("hit") >= 0 && s.indexOf("$" + price) >= 0);
+      });
+    }
+    var a232 = hit(am, "232") || pick(am, function (s) { return s.indexOf("$232") >= 0 && s.indexOf("↓") < 0; });
+    var a240 = hit(am, "240") || pick(am, function (s) { return s.indexOf("$240") >= 0 && s.indexOf("↓") < 0; });
+    var w232 = hit(wm, "232") || pick(wm, function (s) { return s.indexOf("$232") >= 0 && s.indexOf("↓") < 0; });
+    var w236 = hit(wm, "236") || pick(wm, function (s) { return s.indexOf("$236") >= 0 && s.indexOf("↓") < 0; });
+    fillCard(card, [
+      { label: "Hit $232", p: a232 ? yesPrice(a232) : NaN },
+      { label: "Hit $240", p: a240 ? yesPrice(a240) : NaN },
+      { label: "This week: $232", p: w232 ? yesPrice(w232) : NaN },
+      { label: "This week: $236", p: w236 ? yesPrice(w236) : NaN }
+    ]);
+  }
+
+  function renderClarity(ev) {
+    var card = document.querySelector('.pred[data-pm="clarity"]');
+    if (!card || !ev) return;
+    var m = (ev.markets || [])[0];
+    var yes = m ? yesPrice(m) : NaN;
+    fillCard(card, [
+      { label: "Signed into law in 2026", p: yes },
+      { label: "No", p: isFinite(yes) ? 1 - yes : NaN, tone: "down" }
+    ]);
+  }
+
+  function loadEvent(slug) {
+    return fetch(GAMMA + "/events?slug=" + encodeURIComponent(slug), { cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("http");
+        return res.json();
+      })
+      .then(parseEvent);
+  }
+
+  function refresh() {
+    Promise.all([
+      loadEvent("fed-decision-in-september-762"),
+      loadEvent("what-price-will-bitcoin-hit-in-august-2026"),
+      loadEvent("bitcoin-above-on-august-27-2026"),
+      loadEvent("what-price-will-nvda-hit-in-august-2026"),
+      loadEvent("will-nvda-hit-week-of-august-24-2026"),
+      loadEvent("clarity-act-signed-into-law-in-2026")
+    ]).then(function (parts) {
+      renderFed(parts[0]);
+      renderBtc(parts[1], parts[2]);
+      renderNvda(parts[3], parts[4]);
+      renderClarity(parts[5]);
+      setLive("live", "Polymarket · " + timeFmt.format(new Date()) + " CT");
+    }).catch(function () {
+      var el = document.getElementById("pm-live");
+      var already = el && el.getAttribute("data-state") === "live";
+      setLive(already ? "stale" : "offline", already ? "Last Polymarket update failed" : "Using baked snapshot · Polymarket offline");
+    });
+  }
+
+  refresh();
+  setInterval(function () {
+    try { refresh(); } catch (err) {}
+  }, POLL_MS);
+})();
+
+</script>
 </body>
 </html>
