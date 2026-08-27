@@ -1846,6 +1846,14 @@
     return typeof n === "number" && isFinite(n);
   }
 
+  function isSaneDow(price, lastPrice) {
+    if (!isFiniteNumber(price) || price < 1000 || price > 200000) return false;
+    if (isFiniteNumber(lastPrice) && lastPrice >= 1000) {
+      if (Math.abs(price - lastPrice) / lastPrice > 0.08) return false;
+    }
+    return true;
+  }
+
   function fmtChgPct(pct) {
     if (!isFiniteNumber(pct)) return "—";
     var mag = Math.abs(pct).toFixed(2) + "%";
@@ -2399,13 +2407,16 @@
   }
 
   function appendDow(price, timeMs) {
-    if (!isFiniteNumber(price)) return;
+    var last = dow[dow.length - 1];
+    if (!isSaneDow(price, last && last.c)) return;
     if (!isFiniteNumber(timeMs)) timeMs = Date.now();
     var minute = Math.floor(timeMs / 60000) * 60000;
     if (dow.length && dayKey(dow[dow.length - 1].t) !== dayKey(minute)) {
       dow = [];
+      last = null;
+      if (!isSaneDow(price, null)) return;
     }
-    var last = dow[dow.length - 1];
+    last = dow[dow.length - 1];
     if (last && Math.floor(last.t / 60000) * 60000 === minute) {
       last.c = price;
       last.h = Math.max(last.h, price);
@@ -2428,16 +2439,17 @@
     var i;
     for (i = 0; i < ts.length; i++) {
       var c = Number(closes[i]);
-      if (!isFiniteNumber(c)) continue;
+      var prev = series.length ? series[series.length - 1].c : NaN;
+      if (!isSaneDow(c, prev)) continue;
       var t = Number(ts[i]) * 1000;
       var o = Number(q.open && q.open[i]);
       var h = Number(q.high && q.high[i]);
       var l = Number(q.low && q.low[i]);
       series.push({
         t: t,
-        o: isFiniteNumber(o) ? o : c,
-        h: isFiniteNumber(h) ? h : c,
-        l: isFiniteNumber(l) ? l : c,
+        o: isSaneDow(o, c) ? o : c,
+        h: isSaneDow(h, c) ? h : c,
+        l: isSaneDow(l, c) ? l : c,
         c: c
       });
     }
@@ -2487,7 +2499,7 @@
         if (!q) throw new Error("quote");
         var price = parseCnbcNum(q.last);
         var t = q.last_time ? Date.parse(q.last_time) : Date.now();
-        if (!isFiniteNumber(price)) throw new Error("price");
+        if (!isSaneDow(price, lastDowLive && lastDowLive.price)) throw new Error("price");
         var prev = parseCnbcNum(q.previous_day_closing);
         if (isFiniteNumber(prev)) dowPrevClose = prev;
         var open = q.curmktstatus === "REG_MKT";
