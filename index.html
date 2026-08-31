@@ -2656,13 +2656,47 @@
     el.textContent = mastFmt.format(new Date()) + " · as of " + fmtTimeCT(Date.now());
   }
 
+  function wxDescFromObs(p) {
+    var text = (p && p.textDescription) ? String(p.textDescription).trim() : "";
+    if (text) return text;
+    var wx = p && p.presentWeather;
+    if (Array.isArray(wx) && wx.length) {
+      var w0 = wx[0] || {};
+      var word = w0.weather || w0.rawString || "";
+      if (word) return word;
+    }
+    var cover = "";
+    var layers = p && p.cloudLayers;
+    if (Array.isArray(layers)) {
+      var i;
+      for (i = 0; i < layers.length; i++) {
+        var amt = layers[i] && layers[i].amount;
+        if (amt === "OVC") cover = "Cloudy";
+        else if (amt === "BKN" && cover !== "Cloudy") cover = "Mostly Cloudy";
+        else if (amt === "SCT" && (cover === "" || cover === "Clear" || cover === "Mostly Clear")) cover = "Partly Cloudy";
+        else if (amt === "FEW" && cover === "") cover = "Mostly Clear";
+        else if ((amt === "CLR" || amt === "SKC") && cover === "") cover = "Clear";
+      }
+    }
+    if (cover) return cover;
+    var raw = (p && p.rawMessage) || "";
+    if (/\b(TSRA|TS|VCTS)\b/.test(raw)) return "Thunderstorms";
+    if (/\b(\+RA|-RA|RA|SHRA)\b/.test(raw)) return "Rain";
+    if (/\bOVC\d/.test(raw)) return "Cloudy";
+    if (/\bBKN\d/.test(raw)) return "Mostly Cloudy";
+    if (/\bSCT\d/.test(raw)) return "Partly Cloudy";
+    if (/\bFEW\d/.test(raw)) return "Mostly Clear";
+    if (/\b(CLR|SKC)\b/.test(raw)) return "Clear";
+    return "";
+  }
+
   function applyObs(data) {
     if (!data || !data.properties) return false;
     var p = data.properties;
     var tempF = toF(p.temperature);
     if (tempF == null) return false;
     tempF = Math.round(tempF);
-    var desc = p.textDescription || "";
+    var desc = wxDescFromObs(p);
     var rh = nwsNum(p.relativeHumidity);
     if (rh != null) rh = Math.round(rh);
     var hiF = toF(p.heatIndex);
@@ -2682,7 +2716,7 @@
     }
 
     setUse($("wx-now-use") || $("wx-now"), pickIcon(desc, tempF, windMph));
-    setText("wx-cond-main", desc || "—");
+    if (desc) setText("wx-cond-main", desc);
 
     var bits = [];
     if (hiF != null) bits.push("Heat index " + hiF + "°");
