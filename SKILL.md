@@ -28,7 +28,7 @@ Keep `.nojekyll`. Filename stays `index.html`.
 1. Read the current `index.html` from GitHub `main`. Reuse layout, CSS, cards, charts, modal, Coinbase BTC poll, NWS fetch, Ask-AI drawer, Polymarket section.
 2. Refresh data only: header as-of, Austin weather copy (NWS still fetches live on load), BTC/Dow figures and baked series (`#btc-series`, `#dow-series`), prediction-market cards, news cards, watch list, footer. Times in America/Chicago.
 3. News: X first, then Reddit, Nostr, then wire. Cite URLs. Label Confirmed / Developing / Rumor. Skip empty categories. Last ~24h unless an older item has a real update.
-4. Prediction markets: 3–4 trending Polymarket markets worth caring about (geopolitics, disasters, AI/tech policy, crypto legislation, science, culture, housing/macro). Skip Bitcoin price ladders and single-stock price markets. Do not pin Fed or CLARITY unless odds are moving a lot. Live fetch from `gamma-api.polymarket.com` with baked fallback.
+4. Prediction markets: 5–6 trending Polymarket markets in the larger 3-column grid. Always include 1–2 markets about new AI model releases (named frontier models / next version by a date, e.g. Gemini Flash 3.8+). Also rotate geopolitics, disasters, AI/tech policy, crypto legislation, science, culture, housing/macro. Skip Bitcoin price ladders and single-stock price markets. Do not pin Fed or CLARITY unless odds are moving a lot. Live fetch from `gamma-api.polymarket.com` with baked fallback.
 5. Publish by updating GitHub `index.html` on `main` (contents API or fast-forward push). Commit message: `Good Morning dashboard — <Month D, YYYY>`.
 
 ## Keep working
