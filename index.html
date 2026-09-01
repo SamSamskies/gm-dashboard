@@ -1106,11 +1106,11 @@
 
   .preds {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
   }
   .pred {
-    padding: 16px 16px 14px;
+    padding: 20px 18px 16px;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -1124,7 +1124,7 @@
   }
   .pred h3 {
     margin: 0;
-    font-size: 14.5px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: -0.015em;
   }
@@ -1154,12 +1154,12 @@
     align-items: baseline;
   }
   .pred-lab {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--ink-2);
     min-width: 0;
   }
   .pred-pct {
-    font-size: 13.5px;
+    font-size: 15px;
     font-weight: 650;
     font-variant-numeric: tabular-nums;
     color: var(--ink);
@@ -1168,7 +1168,7 @@
   .pred-bar {
     grid-column: 1 / -1;
     display: block;
-    height: 4px;
+    height: 6px;
     border-radius: 99px;
     background: var(--inset);
     border: 1px solid var(--line-soft);
@@ -1197,8 +1197,11 @@
     .wx-stats { grid-template-columns: 1fr 1fr; }
     .markets { grid-template-columns: 1fr; }
     .briefs { grid-template-columns: 1fr; }
-    .preds { grid-template-columns: 1fr; }
+    .preds { grid-template-columns: 1fr 1fr; }
     .watch { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .preds { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 520px) {
@@ -1472,6 +1475,34 @@
         <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 6:20 AM CT">STALE</span>
       </div>
                                                 <div class="preds" id="pm-grid">
+        <article class="card pred" data-pm="gemini-flash">
+          <div class="pred-top">
+            <h3>Gemini Flash 3.8+</h3>
+            <a class="pred-src" href="https://polymarket.com/event/next-google-gemini-flash-model-3pt8-released-byptptpt" target="_blank" rel="noopener noreferrer">Polymarket</a>
+          </div>
+          <ul class="pred-rows">
+            <li><span class="pred-lab">By Sep 2</span><span class="pred-pct">62%</span><span class="pred-bar"><i style="width:62%"></i></span></li>
+            <li><span class="pred-lab">By Sep 4</span><span class="pred-pct">73%</span><span class="pred-bar"><i style="width:73%"></i></span></li>
+            <li><span class="pred-lab">By Sep 15</span><span class="pred-pct">86%</span><span class="pred-bar"><i style="width:86%"></i></span></li>
+            <li><span class="pred-lab">By Oct 31</span><span class="pred-pct">98.5%</span><span class="pred-bar"><i style="width:98.5%"></i></span></li>
+          </ul>
+          <p class="pred-foot">$34k 24h · next Flash 3.8+ · Oct 31 is the liquid date</p>
+        </article>
+
+        <article class="card pred" data-pm="openai-astra">
+          <div class="pred-top">
+            <h3>OpenAI Astra</h3>
+            <a class="pred-src" href="https://polymarket.com/event/openais-astra-released-by-20260801214557729" target="_blank" rel="noopener noreferrer">Polymarket</a>
+          </div>
+          <ul class="pred-rows">
+            <li><span class="pred-lab">By Sep 4</span><span class="pred-pct">15.5%</span><span class="pred-bar"><i style="width:15.5%"></i></span></li>
+            <li><span class="pred-lab">By Sep 15</span><span class="pred-pct">53%</span><span class="pred-bar"><i style="width:53%"></i></span></li>
+            <li><span class="pred-lab">By Sep 30</span><span class="pred-pct">84%</span><span class="pred-bar"><i style="width:84%"></i></span></li>
+            <li><span class="pred-lab">By Oct 31</span><span class="pred-pct">94.5%</span><span class="pred-bar"><i style="width:94.5%"></i></span></li>
+          </ul>
+          <p class="pred-foot">$24k 24h · named next OpenAI model</p>
+        </article>
+
         <article class="card pred" data-pm="fed">
           <div class="pred-top">
             <h3>Fed · September</h3>
@@ -3785,17 +3816,41 @@
     ]);
   }
 
+  function renderDateRungs(ev, key, rungs) {
+    var card = document.querySelector('.pred[data-pm="' + key + '"]');
+    if (!card || !ev) return;
+    var m = ev.markets || [];
+    fillCard(card, rungs.map(function (r) {
+      var mk = pick(m, function (s) { return s.indexOf(r.match) >= 0; });
+      return { label: r.label, p: mk ? yesPrice(mk) : NaN };
+    }));
+  }
+
   function refresh() {
     Promise.all([
+      loadEvent("next-google-gemini-flash-model-3pt8-released-byptptpt"),
+      loadEvent("openais-astra-released-by-20260801214557729"),
       loadEvent("fed-decision-in-september-762"),
       loadEvent("will-the-us-invade-iran-before-2027"),
       loadEvent("strait-of-hormuz-traffic-returns-to-normal-by-september-30-20260702154339440"),
       loadEvent("israel-x-iran-ceasefire-continues-throughptptpt-20260716224448963")
     ]).then(function (parts) {
-      renderFed(parts[0]);
-      renderYesNo(parts[1], "iran-invade");
-      renderYesNo(parts[2], "hormuz-sep30");
-      renderYesNo(parts[3], "iran-ceasefire");
+      renderDateRungs(parts[0], "gemini-flash", [
+        { label: "By Sep 2", match: "september 2" },
+        { label: "By Sep 4", match: "september 4" },
+        { label: "By Sep 15", match: "september 15" },
+        { label: "By Oct 31", match: "october 31" }
+      ]);
+      renderDateRungs(parts[1], "openai-astra", [
+        { label: "By Sep 4", match: "september 4" },
+        { label: "By Sep 15", match: "september 15" },
+        { label: "By Sep 30", match: "september 30" },
+        { label: "By Oct 31", match: "october 31" }
+      ]);
+      renderFed(parts[2]);
+      renderYesNo(parts[3], "iran-invade");
+      renderYesNo(parts[4], "hormuz-sep30");
+      renderYesNo(parts[5], "iran-ceasefire");
       setLive("live", "Polymarket · " + timeFmt.format(new Date()) + " CT");
     }).catch(function () {
       var el = document.getElementById("pm-live");
