@@ -3247,8 +3247,8 @@
   function inferenceRequest() {
     var inf = window.inference;
     if (!inf) return null;
-    if (inf.experimental && typeof inf.experimental.request === "function") {
-      return inf.experimental.request.bind(inf.experimental);
+    if (typeof inf.request === "function") {
+      return inf.request.bind(inf);
     }
     return null;
   }
@@ -3424,7 +3424,7 @@
     if (!request) {
       appendError({
         code: "unavailable",
-        message: "window.inference.experimental is missing. Install Inference Bridge and open this page over https or localhost (npx serve)."
+        message: "window.inference.request is missing. Install Inference Bridge and open this page over https or localhost (npx serve)."
       });
       return;
     }
