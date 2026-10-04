@@ -3127,7 +3127,7 @@
     </header>
     <div id="ask-log" class="ask-log"></div>
     <form id="ask-form" class="ask-form">
-      <textarea id="ask-input" rows="1" placeholder="Ask about this card…"></textarea>
+      <textarea id="ask-input" rows="1" placeholder="Ask a follow-up…"></textarea>
       <div class="ask-actions">
         <button type="button" id="ask-clear">Clear</button>
         <button type="button" id="ask-stop" hidden>Stop</button>
@@ -3363,10 +3363,8 @@
   function seedHistory(card) {
     cardTitle = cardHeading(card);
     history = [
-      {
-        role: "system",
-        content: SYSTEM + "\n\nCard: " + cardTitle + "\n\n" + cardContext(card)
-      }
+      { role: "system", content: SYSTEM },
+      { role: "user", content: "Card: " + cardTitle + "\n\n" + cardContext(card) }
     ];
   }
 
@@ -3429,6 +3427,9 @@
       subEl.textContent = cardTitle;
       resetLog();
       setBusy(false);
+      setPanelOpen(true);
+      runInference(null);
+      return;
     } else {
       activeBtn = btn;
     }
@@ -3504,7 +3505,8 @@
       return;
     }
 
-    var userBody = appendMessage("user", userText, false);
+    var userBody = null;
+    if (userText != null) userBody = appendMessage("user", userText, false);
     var assistantBody = appendMessage("assistant", "", true);
     activeController = new AbortController();
     setBusy(true);
@@ -3544,13 +3546,15 @@
       if (!assistantBody.textContent) {
         var bubble = assistantBody.parentElement;
         if (bubble && bubble.parentNode) bubble.parentNode.removeChild(bubble);
-        var userBubble = userBody.parentElement;
-        if (userBubble) {
-          userBubble.classList.add("failed");
-          var lab = userBubble.querySelector(".ask-label");
-          if (lab) lab.textContent = "you · failed";
+        if (userBody) {
+          var userBubble = userBody.parentElement;
+          if (userBubble) {
+            userBubble.classList.add("failed");
+            var lab = userBubble.querySelector(".ask-label");
+            if (lab) lab.textContent = "you · failed";
+          }
         }
-        if (history.length && history[history.length - 1].role === "user") history.pop();
+        if (userText != null && history.length && history[history.length - 1].role === "user") history.pop();
       } else {
         var partial = assistantBody.textContent;
         clearPending(assistantBody);
@@ -3578,7 +3582,7 @@
     seedHistory(activeCard);
     resetLog();
     setBusy(false);
-    try { input.focus(); } catch (err) {}
+    runInference(null);
   }
 
   function makeButton(card) {
