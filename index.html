@@ -206,48 +206,6 @@
     margin-bottom: 2px;
   }
 
-  /* Jump nav */
-  .jump {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    margin: 0 -28px 22px;
-    padding: 10px 28px;
-    background: var(--nav-bg);
-    -webkit-backdrop-filter: saturate(1.4) blur(12px);
-    backdrop-filter: saturate(1.4) blur(12px);
-    border-top: 1px solid var(--line-soft);
-    border-bottom: 1px solid var(--line-soft);
-  }
-  .jump ol {
-    display: flex;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .jump ol::-webkit-scrollbar { display: none; }
-  .jump li[hidden] { display: none; }
-  .jump a {
-    display: inline-block;
-    white-space: nowrap;
-    padding: 5px 11px;
-    border-radius: 999px;
-    border: 1px solid transparent;
-    color: var(--ink-3);
-    font-size: 12.5px;
-    font-weight: 550;
-    letter-spacing: -0.005em;
-  }
-  .jump a:hover { color: var(--ink); background: var(--hover); text-decoration: none; }
-  .jump a[aria-current="true"] {
-    color: var(--ink);
-    background: var(--card);
-    border-color: var(--line);
-  }
 
   /* Sections */
   .section { margin-bottom: 30px; }
@@ -1496,7 +1454,6 @@
   }
   @media (max-width: 840px) {
     .wrap { padding: 20px 16px 32px; }
-    .jump { margin: 0 -16px 18px; padding: 8px 16px; }
     header.mast { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 14px; }
     header.mast .asof { text-align: left; }
     .temp { font-size: 52px; }
@@ -1582,22 +1539,12 @@
         <p class="sub" id="mast-asof">Thursday, October 22, 2026 · as of 6:27 AM CT</p>
       </div>
     </header>
-    <nav class="jump" aria-label="Sections">
-      <ol>
-        <li><a href="#wx-label">Weather</a></li>
-        <li><a href="#mkt-label">Markets</a></li>
-        <li><a href="#imp-label">Important</a></li>
-        <li><a href="#care-label">What I care about</a></li>
-        <li><a href="#pm-label">Prediction markets</a></li>
-        <li><a href="#watch-label">Watch</a></li>
-      </ol>
-    </nav>
 
 
     <section class="section" aria-labelledby="wx-label">
       <div class="section-head">
         <h2 class="section-label" id="wx-label">Austin weather</h2>
-        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:58 AM CT">STALE</span>
+        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:59 AM CT">STALE</span>
       </div>
       <article class="card weather">
         <svg class="wx-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -2074,7 +2021,7 @@ Once you figure it out, it is downright trivial to do. The digital infrastructur
     <section class="section" aria-labelledby="pm-label">
       <div class="section-head">
         <h2 class="section-label" id="pm-label">Prediction markets</h2>
-        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:58 AM CT">STALE</span>
+        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:59 AM CT">STALE</span>
       </div>
                                                 <div class="preds" id="pm-grid">
         <article class="card pred" data-pm="astra-61">
@@ -4324,51 +4271,6 @@ Once you figure it out, it is downright trivial to do. The digital infrastructur
   }, POLL_MS);
 })();
 
-</script>
-<script>
-(function () {
-  "use strict";
-  var nav = document.querySelector("nav.jump");
-  if (!nav) return;
-  var list = nav.querySelector("ol");
-  var links = nav.querySelectorAll('a[href^="#"]');
-  var items = [];
-  var i;
-  for (i = 0; i < links.length; i++) {
-    var target = document.getElementById(links[i].getAttribute("href").slice(1));
-    var sec = target && target.closest ? target.closest("section") : null;
-    if (!sec) { links[i].parentNode.hidden = true; continue; }
-    items.push({ a: links[i], sec: sec });
-  }
-  if (!items.length) { nav.hidden = true; return; }
-  var current = null;
-  var ticking = false;
-  function update() {
-    ticking = false;
-    var offset = nav.getBoundingClientRect().bottom + 24;
-    var pick = items[0];
-    for (var j = 0; j < items.length; j++) {
-      if (items[j].sec.getBoundingClientRect().top <= offset) pick = items[j];
-    }
-    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
-      pick = items[items.length - 1];
-    }
-    if (pick.a === current) return;
-    if (current) current.removeAttribute("aria-current");
-    pick.a.setAttribute("aria-current", "true");
-    current = pick.a;
-    var l = pick.a.offsetLeft, r = l + pick.a.offsetWidth;
-    if (l < list.scrollLeft || r > list.scrollLeft + list.clientWidth) {
-      list.scrollLeft = l - 16;
-    }
-  }
-  function onScroll() {
-    if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
-  }
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-  update();
-})();
 </script>
 <!-- gm-media:start -->
 <div id="media-lightbox" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="media-lb-title">
