@@ -1496,13 +1496,15 @@
     overflow: hidden; cursor: zoom-in; font: inherit; color: inherit;
   }
   .media-img .media-zoom { display: inline-block; width: auto; max-width: 100%; vertical-align: top; }
-  .media-yt .media-yt-play { cursor: pointer; max-width: 420px; }
+  .media-yt { width: 100%; }
+  .media-yt .media-yt-play { cursor: pointer; width: 100%; max-width: none; aspect-ratio: 16 / 9; }
   .media-img img { display: block; width: auto; max-width: 100%; height: auto; max-height: 180px; object-fit: contain; }
-  .media-yt img { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 236px; object-fit: cover; }
+  .media-yt img { display: block; width: 100%; height: 100%; aspect-ratio: 16 / 9; max-height: none; object-fit: cover; }
   .media-video video, .media-yt iframe {
     display: block; width: 100%; max-height: 260px; aspect-ratio: 16 / 9;
     border: 1px solid var(--line-soft); border-radius: 10px; background: #000;
   }
+  .media-yt iframe { width: 100%; height: auto; max-height: none; aspect-ratio: 16 / 9; }
   .media-yt-icon {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
     width: 48px; height: 34px; border-radius: 9px; background: rgba(0,0,0,0.72);
@@ -1544,7 +1546,7 @@
     <section class="section" aria-labelledby="wx-label">
       <div class="section-head">
         <h2 class="section-label" id="wx-label">Austin weather</h2>
-        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:10 AM CT">STALE</span>
+        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:19 AM CT">STALE</span>
       </div>
       <article class="card weather">
         <svg class="wx-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -2023,7 +2025,7 @@ Once you figure it out, it is downright trivial to do. The digital infrastructur
     <section class="section" aria-labelledby="pm-label">
       <div class="section-head">
         <h2 class="section-label" id="pm-label">Prediction markets</h2>
-        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:10 AM CT">STALE</span>
+        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:19 AM CT">STALE</span>
       </div>
                                                 <div class="preds" id="pm-grid">
         <article class="card pred" data-pm="astra-61">
