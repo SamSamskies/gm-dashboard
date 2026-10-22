@@ -38,3 +38,13 @@ Keep `.nojekyll`. Filename stays `index.html`.
 - Dow: last session when closed
 - Weather: NWS on load (Camp Mabry KATT + EWX grid), not a baked snapshot
 - Ask-AI sparkle on each `article.card`
+
+## Card media (images, video, tweet embeds)
+
+News items may carry an optional `media` list (max 1 per card, ~4–6 per board). Types: `image`, `video` (direct mp4/webm), `youtube` (click-to-load iframe), `tweet` (x.com status URL → official X embed with `data-theme="dark" data-dnt="true"`; `widgets.js` loads once, async, only if a tweet exists; the blockquote holds the verbatim post text as a fallback).
+
+- Every X-sourced item embeds the actual post. Keep the card summary and its verified/speculation label. Only real status URLs from the X pass.
+- Add images/video only when they carry information: NHC cones, NWS graphics, USGS ShakeMaps, disaster photos from the reporting outlet, launch screenshots/demo video, media attached to the cited post, source charts. No stock, decorative, generic file-photo, or AI-generated images.
+- Use media from the original source (article og:image only if it depicts the event, the post's own media, official agency graphics). Never fabricate a URL; verify 200 + `image/*`/`video/*` before embedding.
+- Images: lazy, rounded, max-height ~180px, click opens a full-size lightbox. Every embed has a small credit link. Broken media hides itself via `onerror`.
+- Media CSS/JS lives between `gm-media:start` / `gm-media:end` markers in `index.html`; the bake replaces that block in place.
