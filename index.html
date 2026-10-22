@@ -1217,6 +1217,48 @@
     .watch { grid-template-columns: 1fr; }
     .wx-stats { gap: 8px; }
   }
+  /* gm-media:start */
+  .media { margin: 4px 0 10px; }
+  .media[hidden] { display: none !important; }
+  .media-img .media-zoom, .media-yt .media-yt-play {
+    display: block; position: relative; width: 100%; padding: 0; margin: 0;
+    background: var(--inset); border: 1px solid var(--line-soft); border-radius: 10px;
+    overflow: hidden; cursor: zoom-in; font: inherit; color: inherit;
+  }
+  .media-img .media-zoom { display: inline-block; width: auto; max-width: 100%; vertical-align: top; }
+  .media-yt .media-yt-play { cursor: pointer; max-width: 420px; }
+  .media-img img { display: block; width: auto; max-width: 100%; height: auto; max-height: 180px; object-fit: contain; }
+  .media-yt img { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 236px; object-fit: cover; }
+  .media-video video, .media-yt iframe {
+    display: block; width: 100%; max-height: 260px; aspect-ratio: 16 / 9;
+    border: 1px solid var(--line-soft); border-radius: 10px; background: #000;
+  }
+  .media-yt-icon {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 48px; height: 34px; border-radius: 9px; background: rgba(0,0,0,0.72);
+    color: #fff; font-size: 16px; line-height: 34px; text-align: center;
+  }
+  .media-zoom:focus-visible, .media-yt-play:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+  .media-cap { margin-top: 4px; font-size: 11px; color: var(--ink-4); }
+  .media-cap a { color: var(--ink-3); text-decoration: none; }
+  .media-cap a:hover { color: var(--link-hover); text-decoration: underline; }
+  .media-tweet { max-width: 550px; max-height: 480px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border-radius: 12px; }
+  .media-tweet .twitter-tweet-rendered, .media-tweet iframe { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
+  .media-tweet blockquote.twitter-tweet {
+    margin: 0; padding: 10px 12px; background: var(--inset);
+    border: 1px solid var(--line-soft); border-left: 3px solid var(--sky); border-radius: 10px;
+    font-size: 12.5px; line-height: 1.45; color: var(--ink-3);
+  }
+  .media-tweet blockquote.twitter-tweet p { margin: 0 0 6px; color: var(--ink-2); font-size: 12.5px; white-space: pre-line; }
+  .media-tweet blockquote.twitter-tweet a { color: var(--link); }
+  #media-lightbox .modal-panel { width: min(1200px, 100%); padding: 12px 14px 14px; }
+  #media-lightbox .media-lb-img { display: block; max-width: 100%; max-height: 78vh; margin: 0 auto; border-radius: 8px; }
+  @media (max-width: 520px) {
+    .media-img .media-zoom { display: block; }
+    .media-img img { width: 100%; max-height: 200px; object-fit: cover; }
+    .media-tweet { max-width: 100%; max-height: 420px; }
+  }
+  /* gm-media:end */
 </style>
 </head>
 <body>
@@ -1557,6 +1599,9 @@
             <span class="badge developing">Developing</span>
           </div>
           <p><strong>'Black October' cyberattack wave is trending on X.</strong> @kimmonismus says Microsoft reports a China-aligned group used an open-source AI agent framework against &ldquo;2,250+ Microsoft 365 tenants&rdquo; after the ConnectWise breach, sometimes reaching privileged access in under 3 hours. He also lists a backdoored LiteLLM release, PHP2Shell exploits that Cloudflare's CEO says drew &ldquo;millions of exploitation attempts,&rdquo; and a maximum-severity GitLab flaw covering 12 years of releases. <em>Secondhand summaries on X; check vendor advisories before acting. If you run LiteLLM, GitLab self-managed, PHP or Node.js, patch.</em> <a href="https://x.com/kimmonismus/status/2113183576401547509">@kimmonismus on X (blue check)</a> <a href="https://x.com/kimmonismus/status/2113141875368468508">@kimmonismus on X (blue check)</a>.</p>
+          <figure class="media media-tweet"><blockquote class="twitter-tweet" data-theme="dark" data-dnt="true" data-conversation="none"><p lang="en" dir="ltr">To make this more clear: Microsoft says a China-aligned group used an open-source agent framework to hit 2,250+ Microsoft 365 tenants at 2,900 sign-in attempts a minute after the ConnectWise breach. In some cases it got privileged access in under 3 hours.
+
+This is one of the …</p>&mdash; @kimmonismus <a href="https://x.com/kimmonismus/status/2113183576401547509" target="_blank" rel="noopener noreferrer">Oct 22, 2026</a></blockquote><figcaption class="media-cap"><a href="https://x.com/kimmonismus/status/2113183576401547509" target="_blank" rel="noopener noreferrer">X · @kimmonismus</a></figcaption></figure>
           <div class="sources">
             <a href="https://x.com/kimmonismus/status/2113183576401547509" target="_blank" rel="noopener noreferrer">@kimmonismus on X (blue check)</a>
             <a href="https://x.com/kimmonismus/status/2113141875368468508" target="_blank" rel="noopener noreferrer">@kimmonismus on X (blue check)</a>
@@ -1649,6 +1694,11 @@
             <span class="badge rumor">Rumor</span>
           </div>
           <p>Bitcoin on X: @pete_rizzo_ says Nasdaq-listed Alpha Modus bought &ldquo;3,170 #BITCOIN WORTH OVER $250,000,000.&rdquo; An X Live Space from Bitcoin Treasuries says Tesla held onto its bitcoin in Q3. <em>Unconfirmed; no company filing checked yet.</em> <a href="https://x.com/pete_rizzo_/status/2113177374414229911">@pete_rizzo_ on X (blue check)</a>.</p>
+          <figure class="media media-tweet"><blockquote class="twitter-tweet" data-theme="dark" data-dnt="true" data-conversation="none"><p lang="en" dir="ltr">JUST IN: 🇺🇸 NASDAQ LISTED ALPHA MODUS JUST ANNOUNCED THEY BOUGHT 3,170 #BITCOIN WORTH OVER $250,000,000  
+
+THAT&#x27;S MORE THAN 4X THEIR ENTIRE MARKET CAP  
+
+ABSOLUTELY MASSIVE 🚀</p>&mdash; @pete_rizzo_ <a href="https://x.com/pete_rizzo_/status/2113177374414229911" target="_blank" rel="noopener noreferrer">Oct 22, 2026</a></blockquote><figcaption class="media-cap"><a href="https://x.com/pete_rizzo_/status/2113177374414229911" target="_blank" rel="noopener noreferrer">X · @pete_rizzo_</a></figcaption></figure>
           <div class="sources">
             <a href="https://x.com/pete_rizzo_/status/2113177374414229911" target="_blank" rel="noopener noreferrer">@pete_rizzo_ on X (blue check)</a>
           </div>
@@ -1659,6 +1709,11 @@
             <span class="badge rumor">Rumor</span>
           </div>
           <p>AI security on X: @deedydas says non-technical people are exploiting CVEs like PHP2Shell with AI models, calling it &ldquo;downright trivial.&rdquo; Also trending: scrutiny of the Pangram AI detector over false positives. <em>Opinion and trend summary.</em> <a href="https://x.com/deedydas/status/2113198509122076693">@deedydas on X (blue check)</a> <a href="https://x.com/explore/tabs/news">X Explore</a>.</p>
+          <figure class="media media-tweet"><blockquote class="twitter-tweet" data-theme="dark" data-dnt="true" data-conversation="none"><p lang="en" dir="ltr">This is serious. 
+
+I just saw with my very own eyes that even non-technical people can exploit CVEs like PHP2Shell using certain AI models and I am actually frightened.
+
+Once you figure it out, it is downright trivial to do. The digital infrastructure of the world is at risk.</p>&mdash; @deedydas <a href="https://x.com/deedydas/status/2113198509122076693" target="_blank" rel="noopener noreferrer">Oct 22, 2026</a></blockquote><figcaption class="media-cap"><a href="https://x.com/deedydas/status/2113198509122076693" target="_blank" rel="noopener noreferrer">X · @deedydas</a></figcaption></figure>
           <div class="sources">
             <a href="https://x.com/deedydas/status/2113198509122076693" target="_blank" rel="noopener noreferrer">@deedydas on X (blue check)</a>
             <a href="https://x.com/explore/tabs/news" target="_blank" rel="noopener noreferrer">X Explore</a>
@@ -1740,6 +1795,7 @@
             <span class="badge developing">Developing</span>
           </div>
           <p>Tropics: NHC is issuing advisories on Subtropical Storm Josephine, a few hundred miles off the Mid-Atlantic coast. A separate trough east-southeast of Bermuda has a low 10% chance of development. <a href="https://www.nhc.noaa.gov/text/MIATWOAT.shtml">NHC</a>.</p>
+          <figure class="media media-img"><button type="button" class="media-zoom" data-full="https://www.nhc.noaa.gov/storm_graphics/AT10/refresh/AL102026_5day_cone+png/220847_5day_cone.png" data-alt="NHC 5-day forecast cone for Subtropical Storm Josephine, Advisory 3, 5 AM AST Thu Oct 22" aria-label="View larger: NHC 5-day forecast cone for Subtropical Storm Josephine, Advisory 3, 5 AM AST Thu Oct 22"><img src="https://www.nhc.noaa.gov/storm_graphics/AT10/refresh/AL102026_5day_cone+png/220847_5day_cone.png" alt="NHC 5-day forecast cone for Subtropical Storm Josephine, Advisory 3, 5 AM AST Thu Oct 22" loading="lazy" decoding="async" onerror="var f=this.closest('figure');if(f)f.hidden=true"></button><figcaption class="media-cap"><a href="https://www.nhc.noaa.gov/graphics_at5.shtml?cone#contents" target="_blank" rel="noopener noreferrer">NHC · Josephine forecast cone, Advisory 3</a></figcaption></figure>
           <div class="sources">
             <a href="https://www.nhc.noaa.gov/text/MIATWOAT.shtml" target="_blank" rel="noopener noreferrer">NHC</a>
           </div>
@@ -3962,5 +4018,73 @@
 })();
 
 </script>
+<!-- gm-media:start -->
+<div id="media-lightbox" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="media-lb-title">
+  <div class="modal-backdrop" data-mclose="1"></div>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <h2 id="media-lb-title">Image</h2>
+      <button type="button" class="modal-close" data-mclose="1" aria-label="Close">Close</button>
+    </div>
+    <img class="media-lb-img" alt="">
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var lb = document.getElementById("media-lightbox");
+  if (!lb) return;
+  var img = lb.querySelector(".media-lb-img");
+  var title = document.getElementById("media-lb-title");
+  var opener = null;
+  function close() {
+    if (lb.hidden) return;
+    lb.hidden = true; img.removeAttribute("src");
+    document.body.classList.remove("modal-open");
+    if (opener && opener.focus) { try { opener.focus(); } catch (e) {} }
+    opener = null;
+  }
+  document.addEventListener("click", function (ev) {
+    var t = ev.target;
+    if (!t || !t.closest) return;
+    var z = t.closest(".media-zoom");
+    if (z) {
+      ev.preventDefault();
+      opener = z;
+      img.src = z.getAttribute("data-full") || "";
+      img.alt = z.getAttribute("data-alt") || "";
+      if (title) title.textContent = z.getAttribute("data-alt") || "Image";
+      lb.hidden = false;
+      document.body.classList.add("modal-open");
+      return;
+    }
+    if (t.closest("[data-mclose]") && lb.contains(t)) { close(); return; }
+    var y = t.closest(".media-yt-play");
+    if (y) {
+      var fig = y.closest(".media-yt");
+      var id = fig && fig.getAttribute("data-yt");
+      if (!id) return;
+      var f = document.createElement("iframe");
+      f.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?autoplay=1&rel=0";
+      f.title = "YouTube video";
+      f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      f.allowFullscreen = true;
+      f.loading = "lazy";
+      y.parentNode.replaceChild(f, y);
+    }
+  });
+  img.addEventListener("error", function () { if (img.getAttribute("src")) close(); });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !lb.hidden) { ev.preventDefault(); close(); }
+  });
+  if (document.querySelector("blockquote.twitter-tweet")) {
+    var s = document.createElement("script");
+    s.async = true; s.charset = "utf-8";
+    s.src = "https://platform.twitter.com/widgets.js";
+    document.body.appendChild(s);
+  }
+})();
+</script>
+<!-- gm-media:end -->
 </body>
 </html>
