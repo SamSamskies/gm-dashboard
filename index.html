@@ -1488,6 +1488,12 @@
     .pred { padding: 14px 14px 13px; }
   }
   /* gm-media:start */
+  .item p:has(+ .card-why) { margin-bottom: 8px; }
+  .card-why, .item p.card-why { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2, #c4cad4); }
+  .card-why-label, .item p.card-why strong.card-why-label { color: #e08a3c; font-weight: 650; }
+  @media (prefers-color-scheme: light) {
+    .card-why-label, .item p.card-why strong.card-why-label { color: #b85d14; }
+  }
   .media { margin: 4px 0 10px; }
   .media[hidden] { display: none !important; }
   .media-img .media-zoom, .media-yt .media-yt-play {
@@ -1546,7 +1552,7 @@
     <section class="section" aria-labelledby="wx-label">
       <div class="section-head">
         <h2 class="section-label" id="wx-label">Austin weather</h2>
-        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 6:19 AM CT">STALE</span>
+        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:06 AM CT">STALE</span>
       </div>
       <article class="card weather">
         <svg class="wx-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -1786,6 +1792,7 @@
             <span class="badge developing">Developing</span>
           </div>
           <p><strong>More than 1,300 arrested in France</strong> as clashes followed another day of mass protests over rising living costs; Al Jazeera says authorities deployed 70,000 officers. Large marches also hit Milan, Rome and Madrid, with soldiers guarding central Milan. <a href="https://www.bbc.co.uk/news/articles/c95ynd587ynzo">BBC</a> <a href="https://www.aljazeera.com/gallery/2026/10/25/photos-clashes-erupt-in-france-amid-protests-over-rising-living-costs">Al Jazeera</a> <a href="https://www.npr.org/2026/10/25/nx-s1-6016126/thousands-of-protesters-across-europe">NPR</a>.</p>
+          <p class="card-why"><strong class="card-why-label">Why it matters:</strong> Deploying 70,000 officers and restricting marches to union-organised demonstrations kept Saturday&#x27;s unrest from repeating last weekend&#x27;s widespread looting and rioting.</p>
           <div class="sources">
             <a href="https://www.bbc.co.uk/news/articles/c95ynd587ynzo" target="_blank" rel="noopener noreferrer">BBC</a>
             <a href="https://www.aljazeera.com/gallery/2026/10/25/photos-clashes-erupt-in-france-amid-protests-over-rising-living-costs" target="_blank" rel="noopener noreferrer">Al Jazeera</a>
@@ -1798,6 +1805,7 @@
             <span class="badge developing">Developing</span>
           </div>
           <p><strong>Brazil votes today:</strong> President Lula, seeking a fourth term, faces Flávio Bolsonaro, son of the imprisoned ex-president, in a tight race. Polymarket has Bolsonaro at about 79.5%. <a href="https://www.bbc.co.uk/news/articles/cxp8g21j4648o">BBC</a> <a href="https://www.aljazeera.com/news/liveblog/2026/10/25/brazil-election-2026-live-lula-and-bolsonaro-in-tight-race">Al Jazeera</a> <a href="https://polymarket.com/event/brazil-presidential-election">Polymarket</a>.</p>
+          <p class="card-why"><strong class="card-why-label">Why it matters:</strong> No candidate trailing after Brazil&#x27;s first round has ever come back to win the runoff, and a Bolsonaro victory would pivot policy toward tax and public spending cuts.</p>
           <div class="sources">
             <a href="https://www.bbc.co.uk/news/articles/cxp8g21j4648o" target="_blank" rel="noopener noreferrer">BBC</a>
             <a href="https://www.aljazeera.com/news/liveblog/2026/10/25/brazil-election-2026-live-lula-and-bolsonaro-in-tight-race" target="_blank" rel="noopener noreferrer">Al Jazeera</a>
@@ -1810,6 +1818,7 @@
             <span class="badge confirmed">Confirmed</span>
           </div>
           <p><strong>Musk says SpaceX restricted Ukraine's Starlink connection,</strong> accusing Ukraine of violating its terms of service by using the network for military activity; service has since been restored, and Zelenskyy said normal speeds are back after more than a week of disruptions. <a href="https://www.bbc.co.uk/news/articles/cvx28ljp8n4xo">BBC</a> <a href="https://www.npr.org/2026/10/24/nx-s1-6015482/ukraine-starlink-working-after-disruptions">NPR</a>.</p>
+          <p class="card-why"><strong class="card-why-label">Why it matters:</strong> The week-long outage showed that commercial terms-of-service disputes can directly hamper Ukraine&#x27;s frontline communications, logistics, and defense against Shahed drones.</p>
           <div class="sources">
             <a href="https://www.bbc.co.uk/news/articles/cvx28ljp8n4xo" target="_blank" rel="noopener noreferrer">BBC</a>
             <a href="https://www.npr.org/2026/10/24/nx-s1-6015482/ukraine-starlink-working-after-disruptions" target="_blank" rel="noopener noreferrer">NPR</a>
@@ -1821,6 +1830,7 @@
             <span class="badge developing">Developing</span>
           </div>
           <p><strong>Serbia votes</strong> in a parliamentary election pitting longtime leader Aleksandar Vučić against a student-led anticorruption movement. Polymarket odds for Vučić's list fell about 18.5 points to ~53%. <a href="https://www.aljazeera.com/news/2026/10/25/serbia-votes-in-election-pitting-longtime-leader-against-student-movement">Al Jazeera</a> <a href="https://polymarket.com/event/serbia-parliamentary-election-winner-2026">Polymarket</a>.</p>
+          <p class="card-why"><strong class="card-why-label">Why it matters:</strong> The vote is the strongest test in more than a decade of Vučić&#x27;s hold on power, with turnout among younger and undecided voters set to decide whether the student protest movement ousts his coalition.</p>
           <div class="sources">
             <a href="https://www.aljazeera.com/news/2026/10/25/serbia-votes-in-election-pitting-longtime-leader-against-student-movement" target="_blank" rel="noopener noreferrer">Al Jazeera</a>
             <a href="https://polymarket.com/event/serbia-parliamentary-election-winner-2026" target="_blank" rel="noopener noreferrer">Polymarket</a>
@@ -1880,6 +1890,7 @@
             <span class="badge confirmed">Confirmed</span>
           </div>
           <p><strong>Block launched Dessa</strong> (Oct 23), a full-duplex speech model it says was trained from scratch on human conversation; Jack Dorsey says it's small enough to run on a MacBook. Block is inviting AI safety researchers to test it. Quality claims are the company's own. <a href="https://x.com/jack/status/2113697902916751661">@jack on X</a> <a href="https://x.com/blocks/status/2113677471417819386">@blocks on X</a>.</p>
+          <p class="card-why"><strong class="card-why-label">Why it matters:</strong> Running a full-duplex speech model locally on a MacBook removes cloud round-trip latency and keeps voice conversations on-device.</p>
           <figure class="media media-tweet"><blockquote class="twitter-tweet" data-theme="dark" data-dnt="true" data-conversation="none"><p lang="en" dir="ltr">We believe voice is the most natural way to interact with intelligence, so we created Dessa, the most authentic full-duplex speech model ever built. Talking with it feels like talking with a person…full of emotion, nuance, pauses, and a natural cadence.</p>&mdash; @jack <a href="https://x.com/jack/status/2113697902916751661" target="_blank" rel="noopener noreferrer">Oct 23, 2026</a></blockquote><figcaption class="media-cap"><a href="https://x.com/jack/status/2113697902916751661" target="_blank" rel="noopener noreferrer">X · @jack</a></figcaption></figure>
           <div class="sources">
             <a href="https://x.com/jack/status/2113697902916751661" target="_blank" rel="noopener noreferrer">@jack on X</a>
@@ -1924,6 +1935,7 @@
             <span class="badge confirmed">Confirmed</span>
           </div>
           <p>Mortgages: Freddie Mac's 30-year fixed is 7.32% (Oct 22), down from 7.40% the week before; next update Thursday. <a href="https://www.freddiemac.com/pmms">Freddie Mac</a>.</p>
+          <p class="card-why"><strong class="card-why-label">Why it matters:</strong> Even with the dip to 7.32% and the 15-year fixed at 6.68%, a near-certain Fed hold this week leaves mortgage relief tied to bond yields rather than a rate cut.</p>
           <div class="sources">
             <a href="https://www.freddiemac.com/pmms" target="_blank" rel="noopener noreferrer">Freddie Mac</a>
           </div>
@@ -1975,7 +1987,7 @@
     <section class="section" aria-labelledby="pm-label">
       <div class="section-head">
         <h2 class="section-label" id="pm-label">Prediction markets</h2>
-        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 6:19 AM CT">STALE</span>
+        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:06 AM CT">STALE</span>
       </div>
                                                 <div class="preds" id="pm-grid">
         <article class="card pred" data-pm="best-ai-oct">
@@ -3659,7 +3671,7 @@
     if (el && el.textContent.trim()) return el.textContent.trim();
     var when = card.querySelector(".when");
     if (when && when.textContent.trim()) return "Watch · " + when.textContent.trim();
-    var strong = card.querySelector("p strong");
+    var strong = card.querySelector("p:not(.card-why) strong");
     if (strong && strong.textContent.trim()) return strong.textContent.trim();
     var section = card.closest(".section");
     var label = section && section.querySelector(".section-label");
