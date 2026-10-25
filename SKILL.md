@@ -43,6 +43,17 @@ Section order: Austin weather → Markets → Important → What I care about �
 - Weather: NWS on load (Camp Mabry KATT + EWX grid), not a baked snapshot
 - Ask-AI sparkle on each `article.card`
 
+## Why it matters callout (`why`)
+
+Cards in `important` and `care` may include an optional `"why"` string (or `"why_it_matters"` alias). When present, it renders right below the main summary `<p>` (and before any media or source links) as:
+
+```html
+<p class="card-why"><strong class="card-why-label">Why it matters:</strong> …</p>
+```
+
+- Use it when the takeaway, second-order effect, or concrete action item is not already obvious from the summary (~4–6 cards per board). Omit when the summary is self-explanatory.
+- Keep it to one concise sentence grounded strictly in the cited source/context — no hype, filler, or unverified names/numbers.
+
 ## Card media (images, video, tweet embeds)
 
 News items may carry an optional `media` list (max 1 per card, ~4–6 per board). Types: `image`, `video` (direct mp4/webm), `youtube` (click-to-load iframe), `tweet` (x.com status URL → official X embed with `data-theme="dark" data-dnt="true"`; `widgets.js` loads once, async, only if a tweet exists; the blockquote holds the verbatim post text as a fallback).
