@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Good Morning · Monday, October 26, 2026 · as of 6:21 AM CT</title>
+<title>Good Morning · Monday, October 26, 2026 · as of 9:10 PM CT</title>
 <style>
   :root {
     color-scheme: dark;
@@ -1536,6 +1536,237 @@
     .media-img img { width: 100%; max-height: 200px; object-fit: cover; }
     .media-tweet { max-width: 100%; max-height: 420px; }
   }
+  .pantry {
+    padding: 16px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-left: 3px solid var(--pantry-accent, #e0b96a);
+  }
+  .pantry[data-level="5"] { --pantry-accent: #7dba94; --pantry-bg: rgba(125,186,148,0.11); --pantry-line: rgba(125,186,148,0.34); }
+  .pantry[data-level="4"] { --pantry-accent: #e0b96a; --pantry-bg: rgba(224,185,106,0.12); --pantry-line: rgba(224,185,106,0.38); }
+  .pantry[data-level="3"] { --pantry-accent: #e08a3c; --pantry-bg: rgba(224,138,60,0.13); --pantry-line: rgba(224,138,60,0.40); }
+  .pantry[data-level="2"] { --pantry-accent: #df6b52; --pantry-bg: rgba(223,107,82,0.14); --pantry-line: rgba(223,107,82,0.42); }
+  .pantry[data-level="1"] { --pantry-accent: #d94b58; --pantry-bg: rgba(217,75,88,0.16); --pantry-line: rgba(217,75,88,0.46); }
+  .pantry-scale-hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.02em;
+  }
+  .pantry-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+  }
+  .pantry-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: var(--pantry-accent, #e0b96a);
+    background: var(--pantry-bg, rgba(224,185,106,0.12));
+    border: 1px solid var(--pantry-line, rgba(224,185,106,0.38));
+    box-shadow: 0 0 14px var(--pantry-bg, rgba(224,185,106,0.12));
+  }
+  .pantry-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--pantry-accent, #e0b96a);
+    box-shadow: 0 0 8px var(--pantry-accent, #e0b96a);
+  }
+  .pantry-headline {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .pantry-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: var(--mono);
+  }
+  .pantry-meter {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .pantry-step {
+    position: relative;
+    padding: 9px 10px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--inset);
+    border: 1px solid var(--line-soft);
+    border-top: 3px solid var(--step-color, var(--line));
+    opacity: 0.56;
+    transition: opacity 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .pantry-step.l5 { --step-color: #7dba94; --step-bg: rgba(125,186,148,0.10); --step-line: rgba(125,186,148,0.42); }
+  .pantry-step.l4 { --step-color: #e0b96a; --step-bg: rgba(224,185,106,0.11); --step-line: rgba(224,185,106,0.48); }
+  .pantry-step.l3 { --step-color: #e08a3c; --step-bg: rgba(224,138,60,0.12); --step-line: rgba(224,138,60,0.48); }
+  .pantry-step.l2 { --step-color: #df6b52; --step-bg: rgba(223,107,82,0.13); --step-line: rgba(223,107,82,0.50); }
+  .pantry-step.l1 { --step-color: #d94b58; --step-bg: rgba(217,75,88,0.15); --step-line: rgba(217,75,88,0.54); }
+  .pantry-step.active {
+    opacity: 1;
+    background: var(--step-bg);
+    border-color: var(--step-line);
+    border-top: 3px solid var(--step-color);
+    box-shadow: 0 0 18px var(--step-bg);
+  }
+  .pantry-step-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .pantry-num {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--step-color);
+  }
+  .pantry-stock {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .pantry-name {
+    font-size: 12.5px;
+    font-weight: 650;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 2px;
+  }
+  .pantry-desc {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.35;
+  }
+  .pantry-rationale {
+    margin: 0;
+    font-size: 13.75px;
+    line-height: 1.58;
+    color: var(--ink-2);
+  }
+  .pantry-rationale strong {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .pantry-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .pantry-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .pantry-row-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    min-width: 78px;
+  }
+  .pantry-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.35;
+    background: var(--inset);
+    border: 1px solid var(--line-soft);
+    color: var(--ink-2);
+  }
+  .pantry-pill::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--ink-4);
+  }
+  .pantry-pill.ok {
+    border-color: var(--confirmed-line);
+    background: var(--confirmed-bg);
+    color: var(--confirmed-ink);
+  }
+  .pantry-pill.ok::before { background: var(--up); }
+  .pantry-pill.warn {
+    border-color: var(--developing-line);
+    background: var(--developing-bg);
+    color: var(--developing-ink);
+  }
+  .pantry-pill.warn::before { background: #e0b96a; }
+  .pantry-pill.alert {
+    border-color: rgba(217,75,88,0.42);
+    background: rgba(217,75,88,0.12);
+    color: #f08c96;
+  }
+  .pantry-pill.alert::before { background: #d94b58; }
+  .pantry-pill.check {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .pantry-pill.check::before {
+    background: var(--pantry-accent, #e0b96a);
+  }
+  @media (prefers-color-scheme: light) {
+    .pantry[data-level="5"] { --pantry-accent: #23804c; --pantry-bg: rgba(35,128,76,0.08); --pantry-line: rgba(35,128,76,0.28); }
+    .pantry[data-level="4"] { --pantry-accent: #9a6406; --pantry-bg: rgba(154,100,6,0.08); --pantry-line: rgba(154,100,6,0.28); }
+    .pantry[data-level="3"] { --pantry-accent: #b85d14; --pantry-bg: rgba(184,93,20,0.09); --pantry-line: rgba(184,93,20,0.30); }
+    .pantry[data-level="2"] { --pantry-accent: #b83c22; --pantry-bg: rgba(184,60,34,0.10); --pantry-line: rgba(184,60,34,0.32); }
+    .pantry[data-level="1"] { --pantry-accent: #a61f2d; --pantry-bg: rgba(166,31,45,0.10); --pantry-line: rgba(166,31,45,0.34); }
+    .pantry-step.l5 { --step-color: #23804c; --step-bg: rgba(35,128,76,0.07); --step-line: rgba(35,128,76,0.32); }
+    .pantry-step.l4 { --step-color: #9a6406; --step-bg: rgba(154,100,6,0.08); --step-line: rgba(154,100,6,0.35); }
+    .pantry-step.l3 { --step-color: #b85d14; --step-bg: rgba(184,93,20,0.09); --step-line: rgba(184,93,20,0.36); }
+    .pantry-step.l2 { --step-color: #b83c22; --step-bg: rgba(184,60,34,0.10); --step-line: rgba(184,60,34,0.38); }
+    .pantry-step.l1 { --step-color: #a61f2d; --step-bg: rgba(166,31,45,0.11); --step-line: rgba(166,31,45,0.40); }
+    .pantry-pill.alert { color: #a61f2d; }
+  }
+  @media (max-width: 760px) {
+    .pantry-meter {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .pantry-step:not(.active) .pantry-desc { display: none; }
+    .pantry-step {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      border-top: 1px solid var(--line-soft);
+      border-left: 3px solid var(--step-color, var(--line));
+    }
+    .pantry-step.active {
+      display: block;
+      border-top: 1px solid var(--step-line);
+      border-left: 3px solid var(--step-color);
+    }
+    .pantry-row-label { min-width: auto; width: 100%; }
+  }
   /* gm-media:end */
 </style>
 </head>
@@ -1544,7 +1775,7 @@
     <header class="mast">
       <div>
         <h1>Good Morning</h1>
-        <p class="sub" id="mast-asof">Monday, October 26, 2026 · as of 6:21 AM CT</p>
+        <p class="sub" id="mast-asof">Monday, October 26, 2026 · as of 9:10 PM CT</p>
       </div>
     </header>
 
@@ -1552,7 +1783,7 @@
     <section class="section" aria-labelledby="wx-label">
       <div class="section-head">
         <h2 class="section-label" id="wx-label">Austin weather</h2>
-        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:39 AM CT">STALE</span>
+        <span id="wx-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:10 PM CT">STALE</span>
       </div>
       <article class="card weather">
         <svg class="wx-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -1783,6 +2014,71 @@
       </div>
     </section>
 
+    <section class="section" id="pantry-section" aria-labelledby="pantry-label">
+      <div class="section-head">
+        <h2 class="section-label" id="pantry-label">Household readiness · PANTRYCON</h2>
+        <span class="pantry-scale-hint">DEFCON-style 5 (calm) → 1 (max)</span>
+      </div>
+      <article class="card pantry" data-level="4">
+        <div class="pantry-head item-top">
+          <span class="pantry-badge" data-level="4">PANTRYCON 4</span>
+          <span class="pantry-headline">Top Off the Pantry — Keep ~2 Weeks of Food &amp; Water</span>
+          <span class="pantry-sub">Elevated background risk · No panic buying</span>
+        </div>
+        <div class="pantry-meter" role="group" aria-label="PANTRYCON 5 to 1 household supply readiness scale">
+          <div class="pantry-step l5" data-step="5">
+            <div class="pantry-step-top"><span class="pantry-num">PANTRYCON 5</span><span class="pantry-stock">3–7 days</span></div>
+            <div class="pantry-name">Normal Larder</div>
+            <div class="pantry-desc">Routine baseline · 1 gal/person/day water &amp; shelf-stable meals for brief Texas storms or outages</div>
+          </div>
+          <div class="pantry-step l4 active" data-step="4" aria-current="true">
+            <div class="pantry-step-top"><span class="pantry-num">PANTRYCON 4</span><span class="pantry-stock">2 weeks</span></div>
+            <div class="pantry-name">Top Off the Pantry</div>
+            <div class="pantry-desc">Elevated background risk · 14 days food/water, power banks charged, small-bill cash</div>
+          </div>
+          <div class="pantry-step l3" data-step="3">
+            <div class="pantry-step-top"><span class="pantry-num">PANTRYCON 3</span><span class="pantry-stock">30 days</span></div>
+            <div class="pantry-name">Deep Pantry</div>
+            <div class="pantry-desc">Credible ERCOT, weather, supply or unrest watch · 30 days food/water/filtration, meds, fuel, cash</div>
+          </div>
+          <div class="pantry-step l2" data-step="2">
+            <div class="pantry-step-top"><span class="pantry-num">PANTRYCON 2</span><span class="pantry-stock">60 days</span></div>
+            <div class="pantry-name">Bunkered</div>
+            <div class="pantry-desc">Imminent grid/payment disruption or mobilization · 60 days food/water/fuel, backup power ready</div>
+          </div>
+          <div class="pantry-step l1" data-step="1">
+            <div class="pantry-step-top"><span class="pantry-num">PANTRYCON 1</span><span class="pantry-stock">90+ days</span></div>
+            <div class="pantry-name">Full FORTRESS</div>
+            <div class="pantry-desc">Active grid-down or supply-chain emergency · 90+ days supply (Pentagon FORTRESS standard)</div>
+          </div>
+        </div>
+        <p class="pantry-rationale"><strong>PANTRYCON 4 · Top Off the Pantry (2 weeks)</strong> — Austin weather and the ERCOT grid are calm and grocery supply chains are running normally, so no panic buying is warranted. Background infrastructure and geopolitical risk is elevated — active exploitation of the critical PHP flaw (“Black October”), the UK’s 72-hour household cyber-preparedness campaign, the Pentagon’s 90-day FORTRESS base-resilience rollout, US–Iran tension (ceasefire ~85.5% through Oct 31; ~18.5% US invasion before 2027), and U.S. midterms a week away on Nov 3 (Insurrection Act 19% by year-end) — so casually top off to a comfortable two-week supply of shelf-stable food you actually eat, bottled water, prescriptions, and a little cash for card-reader outages.</p>
+        <div class="pantry-rows">
+          <div class="pantry-pills" aria-label="Readiness signals">
+            <span class="pantry-row-label">Signals</span>
+            <span class="pantry-pill ok">Austin/ERCOT: Calm</span>
+            <span class="pantry-pill warn">Cyber/Grid: Elevated (PHP flaw + UK/US hardening)</span>
+            <span class="pantry-pill warn">Insurrection Act: 19%</span>
+            <span class="pantry-pill warn">US–Iran Ceasefire: 85.5%</span>
+          </div>
+          <div class="pantry-pills" aria-label="Target stockpile checklist">
+            <span class="pantry-row-label">Stock target</span>
+            <span class="pantry-pill check">14 days shelf-stable food</span>
+            <span class="pantry-pill check">Water (~14 gal/person)</span>
+            <span class="pantry-pill check">Small-bill cash</span>
+            <span class="pantry-pill check">Charged power bank</span>
+            <span class="pantry-pill check">Prescriptions topped off</span>
+          </div>
+        </div>
+        <div class="sources">
+          <a href="https://www.foxnews.com/politics/inside-pentagons-doomsday-plan-keep-america-fighting-global-war-erupts" target="_blank" rel="noopener noreferrer">Fox News · FORTRESS 90-day plan</a>
+          <a href="https://www.gov.uk/government/news/households-encouraged-to-take-small-simple-steps-to-stay-prepared-in-an-emergency" target="_blank" rel="noopener noreferrer">GOV.UK · 72h Be Ready</a>
+          <a href="https://polymarket.com/event/insurrection-act-invoked-by" target="_blank" rel="noopener noreferrer">Polymarket · Insurrection Act</a>
+          <a href="https://polymarket.com/event/us-iran-ceasefire-continues-throughptptpt" target="_blank" rel="noopener noreferrer">Polymarket · US–Iran ceasefire</a>
+        </div>
+      </article>
+    </section>
+
     <section class="section" aria-labelledby="imp-label">
       <h2 class="section-label" id="imp-label">Important</h2>
       <div class="stack">
@@ -1987,7 +2283,7 @@
     <section class="section" aria-labelledby="pm-label">
       <div class="section-head">
         <h2 class="section-label" id="pm-label">Prediction markets</h2>
-        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 8:39 AM CT">STALE</span>
+        <span id="pm-live" class="live-pill" data-state="stale" title="Baked snapshot · 9:10 PM CT">STALE</span>
       </div>
                                                 <div class="preds" id="pm-grid">
         <article class="card pred" data-pm="best-ai-oct">
