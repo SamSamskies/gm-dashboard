@@ -1,65 +1,87 @@
 ---
 name: gm-dashboard-bake
-description: Use this when updating the Good Morning dashboard HTML or publishing it to GitHub Pages. Do not rebuild the page from scratch.
+description: Bake and publish the Good Morning dashboard (index.html on SamSamskies/gm-dashboard -> Vercel). Edit in place; never rebuild from scratch.
 ---
 
-# Good Morning dashboard bake
+# Good Morning Dashboard Bake
 
-Single-file dashboard. Edit `index.html` in place. Never replace the design.
+Single-file static dashboard (`index.html`) deployed from `SamSamskies/gm-dashboard` branch `main` to https://gm-dashboard-samsamskies.vercel.app/ (with `/api/dow` serverless function on Vercel).
 
-## Source of truth
+## Non-negotiable rules
 
-- GitHub: `SamSamskies/gm-dashboard` branch `main`
-- Pages: https://samsamskies.github.io/gm-dashboard/
+- **Edit `index.html` in place** using `patch.py` and a `cards.json` payload. Never rewrite or restyle the page from scratch.
+- **No secrets or local filesystem paths** in `index.html`, commit messages, or this repo.
+- **All displayed times** in `America/Chicago` (CT).
+- **Read-only on X / Nostr / Reddit / news wires**: never post, like, follow, or mutate anything.
 
-Keep `.nojekyll`. Filename stays `index.html`.
+## Page layout & invariants (`patch.py` enforces these)
 
-## Do not
+The page has **seven sections** in this fixed order:
+1. **Austin weather** (`wx-label`) — live NWS (`KATT` + `EWX/156,91`) on load + baked fallback
+2. **Markets** (`mkt-label`) — BTC + Dow cards with side-by-side ~180px charts and click-to-expand modal
+3. **Household readiness · PANTRYCON** (`pantry-label`, `#pantry-section`) — DEFCON-style 5 → 1 household food/water supply readiness meter (`cards.json` `"pantry"` key)
+4. **Important** (`imp-label`) — numbered cards (`Confirmed` / `Developing` / `Rumor`)
+5. **What I care about** (`care-label`) — numbered cards
+6. **Prediction markets** (`pm-label`) — 1–6 Polymarket cards with live `gamma-api.polymarket.com` refresh
+7. **Watch** (`watch-label`) — **must be the last `<section>`** right before `<footer class="foot">`
 
-- Rebuild the page or restyle it
-- Force-push
-- Change git config
-- Amend commits
-- Install an X connector
-- Post, like, follow, or mutate anything on X (read-only)
+Layout rules:
+- **No separate Nostr section** (`nostr-label` must not exist). Recent Nostr notes (**≤ 12 hours old**, linked to `https://jumble.social/notes/note1...`) go into `important` or `care` as normal cards with a `Nostr · <author>` source chip.
+- **No sticky jump nav** (`nav.jump` must not exist).
+- **Keep all live IDs & scripts intact**: `wx-temp`, `wx-cond-main`, `wx-cond-sub`, `wx-cond-obs`, `wx-high`, `wx-high-s`, `wx-low`, `wx-hi`, `wx-rain`, `wx-rain-s`, `wx-adv-until`, `wx-hourly-cap`, `wx-hourly-row`, `wx-now-use`, `wx-live`, `pm-live`, `pm-grid`, `btc-price`, `btc-chg`, `btc-meta`, `btc-series`, `dow-session`, `dow-price`, `dow-chg`, `dow-meta`, `dow-series`, `/api/dow`, `gamma-api.polymarket.com`, and the Ask-AI drawer (`SYSTEM` = 2, `seedHistory` = 3, `runInference` = 4).
 
-## Every bake
+## Household Supply Readiness (`"pantry"` · `PANTRYCON`)
 
-1. Read the current `index.html` from GitHub `main`. Reuse layout, CSS, cards, charts, modal, Coinbase BTC poll, NWS fetch, Ask-AI drawer, Polymarket section.
-2. Refresh data only: header as-of, Austin weather copy (NWS still fetches live on load), BTC/Dow figures and baked series (`#btc-series`, `#dow-series`), prediction-market cards, news cards, watch list, footer. Times in America/Chicago.
-3. News: X first, then Reddit, Nostr, then wire. Cite URLs. Label Confirmed / Developing / Rumor. Skip empty categories. Last ~24h unless an older item has a real update. Nostr notes must be from the past 12h and only appear when they genuinely belong in Important or What I care about, as normal cards with a `Nostr · <author>` jumble.social source and a verified/speculation note. No Nostr placeholder cards.
-4. Prediction markets: 5–6 trending Polymarket markets in the larger 3-column grid. Always include 1–2 markets about new AI model releases (named frontier models / next version by a date, e.g. Gemini Flash 3.8+). Also rotate geopolitics, disasters, AI/tech policy, crypto legislation, science, culture, housing/macro. Skip Bitcoin price ladders and single-stock price markets. Do not pin Fed or CLARITY unless odds are moving a lot. Live fetch from `gamma-api.polymarket.com` with baked fallback.
-5. Publish by updating GitHub `index.html` on `main` (contents API or fast-forward push). Commit message: `Good Morning dashboard — <Month D, YYYY>`.
+`patch.py` renders `#pantry-section` (`Household readiness · PANTRYCON`) right below `Markets` and above `Important` (with a Level 5 default if `"pantry"` is omitted from `cards.json`). Include a `"pantry"` object in `cards.json` on every bake, grounded in real weather/ERCOT, cyber/infrastructure, civil-unrest, and geopolitical signals on the board (zero fearmongering):
 
-## Layout
+- **PANTRYCON 5 · Normal Larder (3–7 days):** Routine baseline. Keep 3–7 days of water (1 gal/person/day) and shelf-stable meals for normal Texas storms or brief outages.
+- **PANTRYCON 4 · Top Off the Pantry (2 weeks):** Elevated background risk (active cyber/infra campaigns, allied 72h preparedness advisories, pre-election tension, or regional conflict escalation). Keep 14 days of shelf-stable food, water, pet/household essentials, power banks charged, and some small-bill cash.
+- **PANTRYCON 3 · Deep Pantry (30 days):** Credible near-term grid, supply-chain, or civil-disorder threat (e.g., ERCOT emergency watch, major tropical/freeze threat to Austin, Insurrection Act / US-Iran war odds spiking above ~35%, or active U.S. infrastructure cyber disruption). Stock 30 days of non-perishable food, water storage/filtration, prescriptions, fuel, and cash.
+- **PANTRYCON 2 · Bunkered (60 days):** Imminent or unfolding homeland disruption, major war mobilization, or widespread grid/payment-system outages. 60 days of food/water/fuel, full tanks, backup power ready.
+- **PANTRYCON 1 · Full FORTRESS (90+ days):** Active grid-down, nationwide emergency, or major conflict affecting U.S. supply chains (matching the Pentagon's 90-day FORTRESS standard).
 
-Section order: Austin weather → Markets → Important → What I care about → Prediction markets → Watch (last, just above the footer). No separate Nostr section and no sticky jump nav.
-
-## Keep working
-
-- Side-by-side charts (~180px), click-to-expand modal
-- BTC: rolling 24h, Coinbase 5-min candles on load, then live poll
-- Dow: last session when closed
-- Weather: NWS on load (Camp Mabry KATT + EWX grid), not a baked snapshot
-- Ask-AI sparkle on each `article.card`
-
-## Why it matters callout (`why`)
-
-Cards in `important` and `care` may include an optional `"why"` string (or `"why_it_matters"` alias). When present, it renders right below the main summary `<p>` (and before any media or source links) as:
-
-```html
-<p class="card-why"><strong class="card-why-label">Why it matters:</strong> …</p>
+```json
+"pantry": {
+  "level": 4,
+  "headline": "Top Off the Pantry — Keep ~2 Weeks of Food & Water",
+  "sub": "Elevated background risk · No panic buying",
+  "rationale": "1–2 grounded sentences explaining why PANTRYCON is at this level today and what practical supplies to keep on hand.",
+  "signals": [
+    {"label": "Austin/ERCOT: Calm", "tone": "ok"},
+    {"label": "Cyber/Grid: Elevated (PHP flaw + UK/US hardening)", "tone": "warn"},
+    {"label": "Insurrection Act: 19%", "tone": "warn"},
+    {"label": "US–Iran Ceasefire: 85.5%", "tone": "warn"}
+  ],
+  "checklist": [
+    "14 days shelf-stable food",
+    "Water (~14 gal/person)",
+    "Small-bill cash",
+    "Charged power bank"
+  ],
+  "sources": [
+    {"href": "https://...", "label": "Source · topic"}
+  ]
+}
 ```
 
-- Use it when the takeaway, second-order effect, or concrete action item is not already obvious from the summary (~4–6 cards per board). Omit when the summary is self-explanatory.
-- Keep it to one concise sentence grounded strictly in the cited source/context — no hype, filler, or unverified names/numbers.
+## Optional `why` ("Why it matters:") on `important` / `care` cards
 
-## Card media (images, video, tweet embeds)
+Each item in `important` or `care` may include an optional `"why"` string:
+- **Selective, not every card**: only include `"why"` when the takeaway, second-order effect, or action item isn't already obvious from `"html"` (e.g. "patch Brotli if you run Node or Bun", "why this benchmark matters for local Mac inference"). Omit `"why"` on routine or self-explanatory items.
+- **One concise sentence**: plain text (no HTML tags needed; `patch.py` strips any leading `"Why it matters:"` prefix and renders `<p class="card-why"><strong class="card-why-label">Why it matters:</strong> …</p>` in warm amber `#e08a3c` / light-mode `#b85d14` between the summary `<p>` and any media/sources).
 
-News items may carry an optional `media` list (max 1 per card, ~4–6 per board). Types: `image`, `video` (direct mp4/webm), `youtube` (click-to-load iframe), `tweet` (x.com status URL → official X embed with `data-theme="dark" data-dnt="true"`; `widgets.js` loads once, async, only if a tweet exists; the blockquote holds the verbatim post text as a fallback).
+## Rich media on `important` / `care` cards
 
-- Every X-sourced item embeds the actual post. Keep the card summary and its verified/speculation label. Only real status URLs from the X pass.
-- Add images/video only when they carry information: NHC cones, NWS graphics, USGS ShakeMaps, disaster photos from the reporting outlet, launch screenshots/demo video, media attached to the cited post, source charts. No stock, decorative, generic file-photo, or AI-generated images.
-- Use media from the original source (article og:image only if it depicts the event, the post's own media, official agency graphics). Never fabricate a URL; verify 200 + `image/*`/`video/*` before embedding.
-- Images: lazy, rounded, max-height ~180px, click opens a full-size lightbox. Every embed has a small credit link. Broken media hides itself via `onerror`.
-- Media CSS/JS lives between `gm-media:start` / `gm-media:end` markers in `index.html`; the bake replaces that block in place.
+Add a `media` list (max **2 per card**, **6 per board**) when an item genuinely benefits from a visual or primary post:
+- `"type": "image"` — real `https://` image URL (maps, USGS shakemaps, NHC cones, charts). Click-to-zoom lightbox.
+- `"type": "tweet"` — real `https://x.com/<handle>/status/<id>` post URL, with verbatim `text`, `handle`, `date`, `credit`. Rendered via X's dark-theme `widgets.js` with styled blockquote fallback.
+- `"type": "youtube"` — real `https://www.youtube.com/watch?v=<id>` URL, privacy-enhanced click-to-play `youtube-nocookie.com` embed.
+- `"type": "video"` — direct `https://` `.mp4`/`.webm` with `<video controls muted playsinline preload="metadata">`.
+
+Every media item is live-verified before baking (HTTP 200 + `image/*` or `video/*`, X syndication lookup for tweets, YouTube oEmbed 200 for videos); broken URLs are automatically dropped.
+
+## Verification before & after publish
+
+1. **Fact-check**: Every claim, number, date, and quote in `important`, `care`, `watch`, and any `"why"` line must appear in its cited source URLs (checked via `factcheck.py`).
+2. **Sanity check**: `patch.py` validates all required DOM IDs, section ordering (`watch-label` last), `#pantry-section` presence, Ask-AI marker counts, absence of `nostr-label` and `nav.jump`, `btc-series` OHLC keys, and single media-assets block.
+3. **Live verification**: After pushing `index.html` to `main`, confirm `https://gm-dashboard-samsamskies.vercel.app/` serves the new build.
