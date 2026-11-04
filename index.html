@@ -3851,6 +3851,19 @@ Ubuntu&#x27;s fix is in testing with no release date.</p>&mdash; @IntCyberDigest
     "Keep answers short. Light markdown is fine: bold, short lists, and links. Do not use headings or code fences. " +
     "You are not the source of the card. If you are unsure, say so. Invite a follow-up when it would help.";
 
+  function nowContext() {
+    var d = new Date();
+    var stamp;
+    try {
+      stamp = d.toLocaleString("en-US", {
+        timeZone: "America/Chicago", weekday: "long", year: "numeric", month: "long",
+        day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short"
+      });
+    } catch (e) { stamp = d.toString(); }
+    return " The current date and time is " + stamp + " (America/Chicago; " + d.toISOString() + " UTC). " +
+      "Your training data ends before today, so anything recent, breaking, or time-sensitive (news, prices, odds, weather, releases, who holds a role) may have changed: search the web for it rather than relying on memory.";
+  }
+
   function escapeHtml(text) {
     return String(text)
       .replace(/&/g, "&amp;")
@@ -4055,7 +4068,7 @@ Ubuntu&#x27;s fix is in testing with no release date.</p>&mdash; @IntCyberDigest
   function seedHistory(card) {
     cardTitle = cardHeading(card);
     history = [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: SYSTEM + nowContext() },
       { role: "user", content: "Card: " + cardTitle + "\n\n" + cardContext(card) }
     ];
   }
