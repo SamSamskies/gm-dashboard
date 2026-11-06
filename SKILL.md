@@ -85,3 +85,19 @@ Every media item is live-verified before baking (HTTP 200 + `image/*` or `video/
 1. **Fact-check**: Every claim, number, date, and quote in `important`, `care`, `watch`, and any `"why"` line must appear in its cited source URLs (checked via `factcheck.py`).
 2. **Sanity check**: `patch.py` validates all required DOM IDs, section ordering (`watch-label` last), `#pantry-section` presence, Ask-AI marker counts, absence of `nostr-label` and `nav.jump`, `btc-series` OHLC keys, and single media-assets block.
 3. **Live verification**: After pushing `index.html` to `main`, confirm `https://gm-dashboard-samsamskies.vercel.app/` serves the new build.
+
+## National PANTRYCON (separate from the board card)
+
+The shareable U.S. assessment is **not** the `cards.json` `"pantry"` object. Canonical file: `assessment.json` in `SamSamskies/pantrycon` (`main`). Contract: `BAKE.md` in that repo. The dashboard fetches:
+
+`https://raw.githubusercontent.com/SamSamskies/pantrycon/main/assessment.json`
+
+`patch.py` must keep this tag before `</body>` when it rewrites `index.html`:
+
+```html
+<script type="module" src="/pantrycon-sync.js"></script>
+```
+
+It must also leave `/pantrycon-sync.js` and `/pantrycon-reader.mjs` in place. The baked pantry card stays local context and can mention one place. The script adds the national card above it and does not replace the local card. If the fetch fails, the page says the national assessment is unavailable and does not invent a level. A browser-saved copy, when present, is shown with its reviewed time.
+
+Do not copy personal stock notes or a city forecast into the national file. On the next bake, remove any level-1 line that calls the band a Pentagon standard; the national scale does not use that claim. Run `node --test test/pantrycon-sync.test.mjs` after touching the hook.
