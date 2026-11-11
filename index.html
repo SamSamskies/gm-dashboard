@@ -291,6 +291,94 @@
   }
   .watch-item.has-ask-abs { padding-right: 46px; }
 
+  .ai-mode {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 8px 0 0;
+    color: var(--ink-4);
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .ai-mode-label { font-weight: 650; letter-spacing: 0.01em; }
+  .ai-mode-sep { user-select: none; }
+  .ai-mode button {
+    font: inherit;
+    font-size: 12px;
+    padding: 0 1px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--ink-4);
+    cursor: pointer;
+  }
+  .ai-mode button[aria-pressed="true"] {
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .ai-mode button:hover { color: var(--ink); }
+  .ai-mode button:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 2px;
+  }
+  .ai-toast {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    z-index: 130;
+    transform: translateX(-50%) translateY(-6px);
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--tip-bg);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .ai-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .ai-copy-ghost {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 2em;
+    height: 2em;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    opacity: 0;
+  }
+  .ai-copy-fallback {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    z-index: 120;
+    width: min(40rem, calc(100vw - 32px));
+    height: 9rem;
+    margin: 0 auto;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--ink);
+    font: inherit;
+    font-size: 12.5px;
+    line-height: 1.45;
+    box-shadow: var(--shadow-pop);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-toast { transition: none; }
+  }
+
   /* Ask AI drawer */
   .ask-backdrop {
     display: none;
@@ -513,6 +601,24 @@
     background: var(--accent-bg);
     border-color: var(--accent-line);
     color: var(--sky);
+  }
+  .ask-copy {
+    display: inline-block;
+    margin-top: 8px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-2);
+  }
+  .ask-copy:hover { color: var(--ink); border-color: var(--sky); }
+  .ask-copy:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 2px;
   }
   @media (min-width: 900px) {
     body.ask-open .ask-backdrop { display: none; }
@@ -3821,6 +3927,13 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
 (function () {
   "use strict";
 
+  // Default sparkle action when nothing is saved and the URL has no ai param.
+  // false copies a prompt; true opens the Inference Bridge drawer.
+  var USE_INFERENCE_BRIDGE = false;
+  var AI_MODE_STORAGE_KEY = "gm-ai-mode";
+  var aiMode = resolveAiMode();
+  var toastTimer = 0;
+
   var SPARKLE =
     '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
     '<path fill="currentColor" d="M12 3l1.15 4.05L17.2 8.2l-4.05 1.15L12 13.4l-1.15-4.05L6.8 8.2l4.05-1.15L12 3zm6.4 8.2l.7 2.45 2.45.7-2.45.7-.7 2.45-.7-2.45-2.45-.7 2.45-.7.7-2.45zM5.6 13.4l.55 1.9 1.9.55-1.9.55-.55 1.9-.55-1.9-1.9-.55 1.9-.55.55-1.9z"/>' +
@@ -4054,12 +4167,228 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
     return text;
   }
 
-  function seedHistory(card) {
+  function cardMessages(card) {
     cardTitle = cardHeading(card);
-    history = [
+    return [
       { role: "system", content: SYSTEM + nowContext() },
       { role: "user", content: "Card: " + cardTitle + "\n\n" + cardContext(card) }
     ];
+  }
+
+  function seedHistory(card) {
+    history = cardMessages(card);
+  }
+
+  function tidyBlock(text) {
+    return String(text)
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map(function (line) { return line.replace(/[ \t]+/g, " ").trim(); })
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  function pasteFrom(messages) {
+    var blocks = [];
+    var i;
+    for (i = 0; i < messages.length; i++) {
+      var msg = messages[i];
+      if (!msg || msg.content == null) continue;
+      var text = tidyBlock(msg.content);
+      if (!text) continue;
+      if (msg.role === "assistant") text = "Assistant:\n" + text;
+      blocks.push(text);
+    }
+    if (
+      blocks.length >= 2 &&
+      messages[0] &&
+      messages[0].role === "system" &&
+      String(messages[0].content || "").trim()
+    ) {
+      return blocks[0] + "\n\n---\n\n" + blocks.slice(1).join("\n\n");
+    }
+    return blocks.join("\n\n");
+  }
+
+  function removeCopyBox() {
+    var existing = document.getElementById("ai-copy-box");
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+  }
+
+  function showToast(message) {
+    var el = document.getElementById("ai-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "ai-toast";
+      el.className = "ai-toast";
+      el.setAttribute("role", "status");
+      el.setAttribute("aria-live", "polite");
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      el.classList.remove("show");
+    }, 1600);
+  }
+
+  function focusEl(el) {
+    if (!el || typeof el.focus !== "function") return;
+    try { el.focus(); } catch (err) {}
+  }
+
+  function showCopyBox(text) {
+    removeCopyBox();
+    var area = document.createElement("textarea");
+    area.id = "ai-copy-box";
+    area.className = "ai-copy-fallback";
+    area.value = text;
+    area.setAttribute("aria-label", "AI prompt");
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try { area.setSelectionRange(0, area.value.length); } catch (err) {}
+    showToast("Select the prompt and copy it");
+  }
+
+  function copyWithExec(text) {
+    removeCopyBox();
+    var area = document.createElement("textarea");
+    area.id = "ai-copy-box";
+    area.className = "ai-copy-ghost";
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.setAttribute("aria-hidden", "true");
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try { area.setSelectionRange(0, area.value.length); } catch (err) {}
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (err2) { ok = false; }
+    removeCopyBox();
+    return ok;
+  }
+
+  function copyPlain(text, restoreFocus) {
+    var legacyOk = false;
+    var canUseClipboard = navigator.clipboard &&
+      typeof navigator.clipboard.writeText === "function" &&
+      window.isSecureContext;
+    if (!canUseClipboard) legacyOk = copyWithExec(text);
+    if (canUseClipboard) {
+      return navigator.clipboard.writeText(text).then(function () {
+        removeCopyBox();
+        focusEl(restoreFocus);
+        return "copied";
+      }, function () {
+        if (!legacyOk) legacyOk = copyWithExec(text);
+        if (legacyOk) {
+          focusEl(restoreFocus);
+          return "copied";
+        }
+        showCopyBox(text);
+        return "manual";
+      });
+    }
+    if (legacyOk) {
+      focusEl(restoreFocus);
+      return Promise.resolve("copied");
+    }
+    showCopyBox(text);
+    return Promise.resolve("manual");
+  }
+
+  function queryAiMode() {
+    try {
+      var value = new URLSearchParams(window.location.search).get("ai");
+      if (!value) return "";
+      value = String(value).trim().toLowerCase();
+      if (value === "copy" || value === "bridge") return value;
+    } catch (err) {}
+    return "";
+  }
+
+  function storedAiMode() {
+    try {
+      var value = localStorage.getItem(AI_MODE_STORAGE_KEY);
+      if (value === "copy" || value === "bridge") return value;
+    } catch (err) {}
+    return "";
+  }
+
+  function resolveAiMode() {
+    return queryAiMode() || storedAiMode() || (USE_INFERENCE_BRIDGE ? "bridge" : "copy");
+  }
+
+  function clearAiQuery() {
+    try {
+      var url = new URL(window.location.href);
+      if (!url.searchParams.has("ai")) return;
+      url.searchParams.delete("ai");
+      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    } catch (err) {}
+  }
+
+  function askTip() {
+    return aiMode === "bridge" ? "Ask about this card" : "Copy AI prompt";
+  }
+
+  function paintAiMode() {
+    var buttons = document.querySelectorAll("#ai-mode button");
+    var i;
+    for (i = 0; i < buttons.length; i++) {
+      var on = buttons[i].getAttribute("data-mode") === aiMode;
+      buttons[i].setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    var tip = askTip();
+    var asks = document.querySelectorAll("button.ask-ai");
+    for (i = 0; i < asks.length; i++) {
+      asks[i].setAttribute("aria-label", tip);
+      asks[i].setAttribute("title", tip);
+    }
+  }
+
+  function chooseAiMode(mode) {
+    aiMode = mode === "bridge" ? "bridge" : "copy";
+    try { localStorage.setItem(AI_MODE_STORAGE_KEY, aiMode); } catch (err) {}
+    clearAiQuery();
+    paintAiMode();
+    if (aiMode !== "bridge") closePanel(true);
+  }
+
+  function modeButton(mode, text) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = text;
+    btn.setAttribute("data-mode", mode);
+    btn.addEventListener("click", function () { chooseAiMode(mode); });
+    return btn;
+  }
+
+  function mountAiMode() {
+    var mast = document.querySelector("header.mast");
+    if (!mast || document.getElementById("ai-mode")) return;
+    var home = mast.querySelector(":scope > div") || mast;
+    var wrap = document.createElement("div");
+    wrap.id = "ai-mode";
+    wrap.className = "ai-mode";
+    wrap.setAttribute("role", "group");
+    wrap.setAttribute("aria-label", "AI mode");
+    var label = document.createElement("span");
+    label.className = "ai-mode-label";
+    label.textContent = "AI:";
+    var sep = document.createElement("span");
+    sep.className = "ai-mode-sep";
+    sep.setAttribute("aria-hidden", "true");
+    sep.textContent = "/";
+    wrap.appendChild(label);
+    wrap.appendChild(modeButton("copy", "Copy prompt"));
+    wrap.appendChild(sep);
+    wrap.appendChild(modeButton("bridge", "Inference Bridge"));
+    home.appendChild(wrap);
+    paintAiMode();
   }
 
   function emptyHint() {
@@ -4196,6 +4525,7 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
         code: "unavailable",
         message: "window.inference.request is missing. Install Inference Bridge and open this page over https or localhost (npx serve)."
       });
+      offerPromptCopy();
       return;
     }
 
@@ -4264,6 +4594,26 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
     }
   }
 
+  function offerPromptCopy() {
+    var row = document.createElement("div");
+    row.className = "ask-msg meta";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ask-copy";
+    btn.textContent = "Copy prompt";
+    btn.addEventListener("click", function () {
+      copyPlain(pasteFrom(history), btn).then(function (result) {
+        if (result === "copied") {
+          btn.textContent = "Copied";
+          showToast("Copied");
+        }
+      });
+    });
+    row.appendChild(btn);
+    logEl.appendChild(row);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
   function sendQuestion(content) {
     input.value = "";
     input.style.height = "auto";
@@ -4283,14 +4633,20 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "ask-ai";
-    btn.setAttribute("aria-label", "Ask about this card");
-    btn.setAttribute("title", "Ask about this card");
+    btn.setAttribute("aria-label", askTip());
+    btn.setAttribute("title", askTip());
     btn.setAttribute("aria-pressed", "false");
     btn.innerHTML = SPARKLE;
     btn.addEventListener("click", function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      openPanel(card, btn);
+      if (aiMode === "bridge") {
+        openPanel(card, btn);
+        return;
+      }
+      copyPlain(pasteFrom(cardMessages(card)), btn).then(function (result) {
+        if (result === "copied") showToast("Copied");
+      });
     });
     return btn;
   }
@@ -4370,6 +4726,7 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
   for (c = 0; c < cards.length; c++) {
     placeButton(cards[c], makeButton(cards[c]));
   }
+  mountAiMode();
 })();
 
 </script>

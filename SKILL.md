@@ -28,7 +28,22 @@ The page has **seven sections** in this fixed order:
 Layout rules:
 - **No separate Nostr section** (`nostr-label` must not exist). Recent Nostr notes (**≤ 12 hours old**, linked to `https://jumble.social/notes/note1...`) go into `important` or `care` as normal cards with a `Nostr · <author>` source chip.
 - **No sticky jump nav** (`nav.jump` must not exist).
-- **Keep all live IDs & scripts intact**: `wx-temp`, `wx-cond-main`, `wx-cond-sub`, `wx-cond-obs`, `wx-high`, `wx-high-s`, `wx-low`, `wx-hi`, `wx-rain`, `wx-rain-s`, `wx-adv-until`, `wx-hourly-cap`, `wx-hourly-row`, `wx-now-use`, `wx-live`, `pm-live`, `pm-grid`, `btc-price`, `btc-chg`, `btc-meta`, `btc-series`, `dow-session`, `dow-price`, `dow-chg`, `dow-meta`, `dow-series`, `/api/dow`, `gamma-api.polymarket.com`, and the Ask-AI drawer (`SYSTEM` = 2, `seedHistory` = 3, `runInference` = 4).
+- **Keep all live IDs & scripts intact**: `wx-temp`, `wx-cond-main`, `wx-cond-sub`, `wx-cond-obs`, `wx-high`, `wx-high-s`, `wx-low`, `wx-hi`, `wx-rain`, `wx-rain-s`, `wx-adv-until`, `wx-hourly-cap`, `wx-hourly-row`, `wx-now-use`, `wx-live`, `pm-live`, `pm-grid`, `btc-price`, `btc-chg`, `btc-meta`, `btc-series`, `dow-session`, `dow-price`, `dow-chg`, `dow-meta`, `dow-series`, `/api/dow`, `gamma-api.polymarket.com`, and the Ask-AI script (marker counts below). Do not add or remove occurrences of `SYSTEM`, `seedHistory`, or `runInference`.
+
+## Ask AI sparkle buttons
+
+Every card gets a sparkle button from the Ask-AI script at the bottom of `index.html`. The drawer, `window.inference` request path, and chat UI stay in the file. The button action depends on the mode:
+
+- **Copy prompt (default).** Clicking a sparkle copies a plain-text prompt and shows a short “Copied” toast. The prompt is the same pair of messages the drawer would send: the system instructions (including the current America/Chicago time) and the card block (`Card: <title>`, the card’s visible text, and a `Sources:` list). The two parts are separated by a `---` line, and each line’s extra indentation is collapsed so the paste reads clearly in ChatGPT. The messages sent to Inference Bridge are unchanged. Clipboard order is `navigator.clipboard.writeText` when it exists on a secure page, then `document.execCommand("copy")`, then a selectable textarea if both fail. The toggle sits under the date line, on the left, so the drawer does not cover it.
+- **Inference Bridge.** The sparkle opens the existing drawer and uses `window.inference` exactly as before. If bridge mode is on but `window.inference` is missing, the drawer still shows the existing unavailable message and adds a **Copy prompt** button for that same text.
+
+Switch modes without editing code:
+
+- **Flag (default only):** `USE_INFERENCE_BRIDGE` in the Ask-AI script. `false` means copy; `true` means Inference Bridge. This applies only when nothing else is set.
+- **Header toggle:** `AI: Copy prompt / Inference Bridge`. The choice is stored in `localStorage` under `gm-ai-mode` (`copy` or `bridge`) and beats the flag.
+- **URL override (this visit):** `?ai=copy` or `?ai=bridge` beats both the saved toggle and the flag. Picking either side of the toggle saves that choice and removes the `ai` query.
+
+Leave the marker counts exact. The copy path must not add another `SYSTEM`, `seedHistory`, or `runInference`; it reuses the existing system prompt through the helper that `seedHistory` already calls.
 
 ## Household Supply Readiness (`"pantry"` · `PANTRYCON`)
 
@@ -83,7 +98,7 @@ Every media item is live-verified before baking (HTTP 200 + `image/*` or `video/
 ## Verification before & after publish
 
 1. **Fact-check**: Every claim, number, date, and quote in `important`, `care`, `watch`, and any `"why"` line must appear in its cited source URLs (checked via `factcheck.py`).
-2. **Sanity check**: `patch.py` validates all required DOM IDs, section ordering (`watch-label` last), `#pantry-section` presence, Ask-AI marker counts, absence of `nostr-label` and `nav.jump`, `btc-series` OHLC keys, and single media-assets block.
+2. **Sanity check**: `patch.py` validates all required DOM IDs, section ordering (`watch-label` last), `#pantry-section` presence, Ask-AI marker counts (`SYSTEM` = 2, `seedHistory` = 3, `runInference` = 4), absence of `nostr-label` and `nav.jump`, `btc-series` OHLC keys, and single media-assets block. Keep the sparkle-button copy path and the `USE_INFERENCE_BRIDGE` flag; do not add new references to those three identifiers.
 3. **Live verification**: After pushing `index.html` to `main`, confirm `https://gm-dashboard-samsamskies.vercel.app/` serves the new build.
 
 ## PANTRYCON: one section only
