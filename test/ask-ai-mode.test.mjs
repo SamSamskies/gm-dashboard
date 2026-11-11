@@ -17,6 +17,14 @@ test("sparkle buttons default to copy, with a runtime bridge switch", () => {
   assert.match(html, /document\.execCommand\("copy"\)/);
   assert.match(html, /function offerPromptCopy\(/);
   assert.match(html, /ai-copy-fallback/);
+  assert.match(html, /<instructions>\\n/);
+  assert.match(html, /<card>\\n/);
+  assert.match(html, /Follow the instructions above for this card\./);
+  assert.equal(html.includes("\\n\\n---\\n\\n"), false);
+  assert.match(html, /role", "switch"/);
+  assert.match(html, /aria-checked/);
+  assert.match(html, /textContent = "Copy"/);
+  assert.match(html, /textContent = "Bridge"/);
   assert.equal((html.match(/\bSYSTEM\b/g) || []).length, 2);
   assert.equal((html.match(/seedHistory/g) || []).length, 3);
   assert.equal((html.match(/runInference/g) || []).length, 4);
@@ -29,4 +37,7 @@ test("SKILL.md documents copy mode, the flag, and the toggle", () => {
   assert.match(skill, /\?ai=bridge/);
   assert.match(skill, /Copy prompt/);
   assert.match(skill, /Inference Bridge/);
+  assert.match(skill, /<instructions>/);
+  assert.match(skill, /<card>/);
+  assert.match(skill, /role="switch"/);
 });

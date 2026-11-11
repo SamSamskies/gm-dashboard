@@ -169,11 +169,12 @@
   /* Header */
   header.mast {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 12px 24px;
     padding: 4px 0 18px;
   }
+  header.mast > div { min-width: 0; flex: 1 1 auto; }
   header.mast h1 {
     margin: 0;
     font-size: 34px;
@@ -291,37 +292,73 @@
   }
   .watch-item.has-ask-abs { padding-right: 46px; }
 
-  .ai-mode {
-    display: flex;
-    flex-wrap: wrap;
+  .ai-switch {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
+    flex-shrink: 0;
     margin: 8px 0 0;
-    color: var(--ink-4);
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  .ai-mode-label { font-weight: 650; letter-spacing: 0.01em; }
-  .ai-mode-sep { user-select: none; }
-  .ai-mode button {
-    font: inherit;
-    font-size: 12px;
-    padding: 0 1px;
+    padding: 2px;
     border: none;
-    border-radius: 4px;
+    border-radius: 999px;
     background: none;
     color: var(--ink-4);
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
     cursor: pointer;
   }
-  .ai-mode button[aria-pressed="true"] {
-    color: var(--ink-2);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  .ai-switch-copy,
+  .ai-switch-bridge {
+    font-weight: 500;
+    letter-spacing: 0.01em;
   }
-  .ai-mode button:hover { color: var(--ink); }
-  .ai-mode button:focus-visible {
+  .ai-switch[aria-checked="false"] .ai-switch-copy,
+  .ai-switch[aria-checked="true"] .ai-switch-bridge {
+    color: var(--ink-2);
+    font-weight: 650;
+  }
+  .ai-switch-track {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--inset);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .ai-switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--sky);
+    transition: transform 0.15s ease;
+  }
+  .ai-switch[aria-checked="true"] .ai-switch-track {
+    background: var(--accent-bg);
+    border-color: var(--accent-line);
+  }
+  .ai-switch[aria-checked="true"] .ai-switch-thumb { transform: translateX(16px); }
+  .ai-switch:hover .ai-switch-track { border-color: var(--sky); }
+  .ai-switch:focus-visible {
     outline: 2px solid var(--sky);
-    outline-offset: 2px;
+    outline-offset: 3px;
+  }
+  @media (max-width: 460px) {
+    header.mast { flex-wrap: wrap; }
+    .ai-switch {
+      order: -1;
+      flex: 1 0 100%;
+      justify-content: flex-end;
+      margin: 0 0 6px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-switch-track, .ai-switch-thumb { transition: none; }
   }
   .ai-toast {
     position: fixed;
@@ -1561,7 +1598,7 @@
   }
   @media (max-width: 840px) {
     .wrap { padding: 20px 16px 32px; }
-    header.mast { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 14px; }
+    header.mast { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 8px 16px; padding-bottom: 14px; }
     header.mast .asof { text-align: left; }
     .temp { font-size: 52px; }
     .wx-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -4190,25 +4227,27 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
   }
 
   function pasteFrom(messages) {
-    var blocks = [];
+    var systemText = "";
+    var cardText = "";
+    var rest = [];
     var i;
     for (i = 0; i < messages.length; i++) {
       var msg = messages[i];
       if (!msg || msg.content == null) continue;
       var text = tidyBlock(msg.content);
       if (!text) continue;
-      if (msg.role === "assistant") text = "Assistant:\n" + text;
-      blocks.push(text);
+      if (msg.role === "system" && !systemText) systemText = text;
+      else if (msg.role === "user" && !cardText) cardText = text;
+      else if (msg.role === "assistant") rest.push("Assistant:\n" + text);
+      else rest.push(text);
     }
-    if (
-      blocks.length >= 2 &&
-      messages[0] &&
-      messages[0].role === "system" &&
-      String(messages[0].content || "").trim()
-    ) {
-      return blocks[0] + "\n\n---\n\n" + blocks.slice(1).join("\n\n");
-    }
-    return blocks.join("\n\n");
+    var parts = [];
+    if (systemText) parts.push("<instructions>\n" + systemText + "\n</instructions>");
+    if (cardText) parts.push("<card>\n" + cardText + "\n</card>");
+    var out = parts.join("\n\n");
+    if (systemText && cardText) out += "\n\nFollow the instructions above for this card.";
+    if (rest.length) out += (out ? "\n\n" : "") + rest.join("\n\n");
+    return out;
   }
 
   function removeCopyBox() {
@@ -4336,14 +4375,15 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
   }
 
   function paintAiMode() {
-    var buttons = document.querySelectorAll("#ai-mode button");
-    var i;
-    for (i = 0; i < buttons.length; i++) {
-      var on = buttons[i].getAttribute("data-mode") === aiMode;
-      buttons[i].setAttribute("aria-pressed", on ? "true" : "false");
+    var sw = document.getElementById("ai-mode");
+    if (sw) {
+      var bridge = aiMode === "bridge";
+      sw.setAttribute("aria-checked", bridge ? "true" : "false");
+      sw.setAttribute("aria-label", bridge ? "AI mode: Bridge" : "AI mode: Copy");
     }
     var tip = askTip();
     var asks = document.querySelectorAll("button.ask-ai");
+    var i;
     for (i = 0; i < asks.length; i++) {
       asks[i].setAttribute("aria-label", tip);
       asks[i].setAttribute("title", tip);
@@ -4358,36 +4398,42 @@ The relationship reportedly dates back to 2023.</p>&mdash; @KobeissiLetter <a hr
     if (aiMode !== "bridge") closePanel(true);
   }
 
-  function modeButton(mode, text) {
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = text;
-    btn.setAttribute("data-mode", mode);
-    btn.addEventListener("click", function () { chooseAiMode(mode); });
-    return btn;
-  }
-
   function mountAiMode() {
     var mast = document.querySelector("header.mast");
     if (!mast || document.getElementById("ai-mode")) return;
-    var home = mast.querySelector(":scope > div") || mast;
-    var wrap = document.createElement("div");
-    wrap.id = "ai-mode";
-    wrap.className = "ai-mode";
-    wrap.setAttribute("role", "group");
-    wrap.setAttribute("aria-label", "AI mode");
-    var label = document.createElement("span");
-    label.className = "ai-mode-label";
-    label.textContent = "AI:";
-    var sep = document.createElement("span");
-    sep.className = "ai-mode-sep";
-    sep.setAttribute("aria-hidden", "true");
-    sep.textContent = "/";
-    wrap.appendChild(label);
-    wrap.appendChild(modeButton("copy", "Copy prompt"));
-    wrap.appendChild(sep);
-    wrap.appendChild(modeButton("bridge", "Inference Bridge"));
-    home.appendChild(wrap);
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "ai-mode";
+    btn.className = "ai-switch";
+    btn.setAttribute("role", "switch");
+    var copyLabel = document.createElement("span");
+    copyLabel.className = "ai-switch-copy";
+    copyLabel.textContent = "Copy";
+    var track = document.createElement("span");
+    track.className = "ai-switch-track";
+    track.setAttribute("aria-hidden", "true");
+    var thumb = document.createElement("span");
+    thumb.className = "ai-switch-thumb";
+    track.appendChild(thumb);
+    var bridgeLabel = document.createElement("span");
+    bridgeLabel.className = "ai-switch-bridge";
+    bridgeLabel.textContent = "Bridge";
+    btn.appendChild(copyLabel);
+    btn.appendChild(track);
+    btn.appendChild(bridgeLabel);
+    btn.addEventListener("click", function () {
+      chooseAiMode(aiMode === "bridge" ? "copy" : "bridge");
+    });
+    btn.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") {
+        ev.preventDefault();
+        chooseAiMode("copy");
+      } else if (ev.key === "ArrowRight" || ev.key === "ArrowDown") {
+        ev.preventDefault();
+        chooseAiMode("bridge");
+      }
+    });
+    mast.appendChild(btn);
     paintAiMode();
   }
 
