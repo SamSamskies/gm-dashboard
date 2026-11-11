@@ -34,13 +34,13 @@ Layout rules:
 
 Every card gets a sparkle button from the Ask-AI script at the bottom of `index.html`. The drawer, `window.inference` request path, and chat UI stay in the file. The button action depends on the mode:
 
-- **Copy prompt (default).** Clicking a sparkle copies a plain-text prompt and shows a short “Copied” toast. The prompt is the same pair of messages the drawer would send: the system instructions (including the current America/Chicago time) and the card block (`Card: <title>`, the card’s visible text, and a `Sources:` list). The two parts are separated by a `---` line, and each line’s extra indentation is collapsed so the paste reads clearly in ChatGPT. The messages sent to Inference Bridge are unchanged. Clipboard order is `navigator.clipboard.writeText` when it exists on a secure page, then `document.execCommand("copy")`, then a selectable textarea if both fail. The toggle sits under the date line, on the left, so the drawer does not cover it.
+- **Copy prompt (default).** Clicking a sparkle copies a plain-text prompt and shows a short “Copied” toast. The prompt is the same pair of messages the drawer would send: the system instructions (including the current America/Chicago time) and the card block (`Card: <title>`, the card’s visible text, and a `Sources:` list). The paste wraps those in `<instructions>` and `<card>` tags, then a line: `Follow the instructions above for this card.` Extra indentation is collapsed in the paste. The messages sent to Inference Bridge stay the untagged role/content pair. Clipboard order is `navigator.clipboard.writeText` when it exists on a secure page, then `document.execCommand("copy")`, then a selectable textarea if both fail.
 - **Inference Bridge.** The sparkle opens the existing drawer and uses `window.inference` exactly as before. If bridge mode is on but `window.inference` is missing, the drawer still shows the existing unavailable message and adds a **Copy prompt** button for that same text.
 
 Switch modes without editing code:
 
 - **Flag (default only):** `USE_INFERENCE_BRIDGE` in the Ask-AI script. `false` means copy; `true` means Inference Bridge. This applies only when nothing else is set.
-- **Header toggle:** `AI: Copy prompt / Inference Bridge`. The choice is stored in `localStorage` under `gm-ai-mode` (`copy` or `bridge`) and beats the flag.
+- **Header toggle:** a switch in the top-right of the header, labeled `Copy` and `Bridge` (`role="switch"`, `aria-checked`; checked means Inference Bridge; Space, Enter, and arrow keys work). On narrow screens it sits on its own row, still at the right, so it does not cover the title. The choice is stored in `localStorage` under `gm-ai-mode` (`copy` or `bridge`) and beats the flag.
 - **URL override (this visit):** `?ai=copy` or `?ai=bridge` beats both the saved toggle and the flag. Picking either side of the toggle saves that choice and removes the `ai` query.
 
 Leave the marker counts exact. The copy path must not add another `SYSTEM`, `seedHistory`, or `runInference`; it reuses the existing system prompt through the helper that `seedHistory` already calls.
